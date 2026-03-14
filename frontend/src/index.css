@@ -40,3 +40,12 @@
     font-weight: 600;
   }
 }
+
+.category-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.category-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
