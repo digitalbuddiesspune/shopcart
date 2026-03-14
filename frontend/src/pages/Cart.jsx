@@ -90,16 +90,13 @@ const Cart = () => {
     }
   };
 
-  // Calculate item price with bulk offers and tax (same logic as ProductDetail)
   const calculateItemPrice = (product, quantity) => {
-    if (!product) return { basePrice: 0, tax: 0, total: 0, taxDetails: { type: '', rate: 0, breakdown: '', cgstAmount: 0, sgstAmount: 0, igstAmount: 0 } };
+    if (!product) return { basePrice: 0, total: 0 };
     
-    // Find the best bulk offer (highest minQty that user qualifies for)
     const bulkOffer = product.bulkOffers
       ?.filter((offer) => quantity >= offer.minQty)
       .sort((a, b) => b.minQty - a.minQty)[0];
     
-    // Calculate base price (with bulk offer if available)
     let basePrice = 0;
     if (bulkOffer && quantity >= bulkOffer.minQty) {
       basePrice = bulkOffer.pricePerPiece * quantity;
@@ -107,112 +104,24 @@ const Cart = () => {
       basePrice = product.price * quantity;
     }
     
-    // Calculate tax according to Indian GST system
-    let tax = 0;
-    let taxDetails = {
-      type: '',
-      rate: 0,
-      breakdown: '',
-      cgstAmount: 0,
-      sgstAmount: 0,
-      igstAmount: 0
-    };
-    
-    // Priority 1: If IGST is set (for inter-state sales)
-    if (product.igst && parseFloat(product.igst) > 0) {
-      const igstRate = parseFloat(product.igst);
-      tax = (basePrice * igstRate) / 100;
-      taxDetails = {
-        type: 'IGST',
-        rate: igstRate,
-        breakdown: `IGST ${igstRate}%`,
-        cgstAmount: 0,
-        sgstAmount: 0,
-        igstAmount: tax
-      };
-    }
-    // Priority 2: If CGST and SGST are set (for intra-state sales)
-    else if (product.cgst && product.sgst && (parseFloat(product.cgst) > 0 || parseFloat(product.sgst) > 0)) {
-      const cgstRate = parseFloat(product.cgst) || 0;
-      const sgstRate = parseFloat(product.sgst) || 0;
-      const cgstAmount = (basePrice * cgstRate) / 100;
-      const sgstAmount = (basePrice * sgstRate) / 100;
-      tax = cgstAmount + sgstAmount;
-      const totalGstRate = cgstRate + sgstRate;
-      taxDetails = {
-        type: 'CGST+SGST',
-        rate: totalGstRate,
-        breakdown: `CGST ${cgstRate}% + SGST ${sgstRate}%`,
-        cgstAmount: cgstAmount,
-        sgstAmount: sgstAmount,
-        igstAmount: 0
-      };
-    }
-    // Priority 3: If only CGST is set
-    else if (product.cgst && parseFloat(product.cgst) > 0) {
-      const cgstRate = parseFloat(product.cgst);
-      tax = (basePrice * cgstRate) / 100;
-      taxDetails = {
-        type: 'CGST',
-        rate: cgstRate,
-        breakdown: `CGST ${cgstRate}%`,
-        cgstAmount: tax,
-        sgstAmount: 0,
-        igstAmount: 0
-      };
-    }
-    // Priority 4: If only SGST is set
-    else if (product.sgst && parseFloat(product.sgst) > 0) {
-      const sgstRate = parseFloat(product.sgst);
-      tax = (basePrice * sgstRate) / 100;
-      taxDetails = {
-        type: 'SGST',
-        rate: sgstRate,
-        breakdown: `SGST ${sgstRate}%`,
-        cgstAmount: 0,
-        sgstAmount: tax,
-        igstAmount: 0
-      };
-    }
-    // Priority 5: If gstOrTaxPercent is set (general GST)
-    else if (product.gstOrTaxPercent && parseFloat(product.gstOrTaxPercent) > 0) {
-      const gstRate = parseFloat(product.gstOrTaxPercent);
-      tax = (basePrice * gstRate) / 100;
-      taxDetails = {
-        type: 'GST',
-        rate: gstRate,
-        breakdown: `GST ${gstRate}%`,
-        cgstAmount: 0,
-        sgstAmount: 0,
-        igstAmount: 0
-      };
-    }
-    
-    const total = basePrice + tax;
-    
-    return { basePrice, tax, total, taxDetails, bulkOffer };
+    return { basePrice, total: basePrice, bulkOffer };
   };
 
-  // Calculate cart totals
   const calculateCartTotals = () => {
     if (!cart || !cart.items) {
-      return { subtotal: 0, totalTax: 0, total: 0 };
+      return { subtotal: 0, total: 0 };
     }
 
     let subtotal = 0;
-    let totalTax = 0;
 
     cart.items.forEach((item) => {
       if (item.product) {
         const priceDetails = calculateItemPrice(item.product, item.quantity);
         subtotal += priceDetails.basePrice;
-        totalTax += priceDetails.tax;
       }
     });
 
-    const total = subtotal + totalTax;
-
-    return { subtotal, totalTax, total };
+    return { subtotal, total: subtotal };
   };
 
   const cartTotals = calculateCartTotals();
@@ -433,12 +342,6 @@ const Cart = () => {
                             <span className="text-xs text-brown-600">Subtotal:</span>
                             <span className="text-sm font-semibold text-brown-700">₹{priceDetails.basePrice.toFixed(2)}</span>
                           </div>
-                          {priceDetails.tax > 0 && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-brown-600">Tax ({priceDetails.taxDetails.breakdown}):</span>
-                              <span className="text-sm font-semibold text-brown-700">₹{priceDetails.tax.toFixed(2)}</span>
-                            </div>
-                          )}
                           <div className="flex justify-between items-center pt-1 border-t border-brown-200">
                             <span className="text-sm font-semibold text-brown-700">Item Total:</span>
                             <span className="text-lg font-bold text-brown-900">₹{priceDetails.total.toFixed(2)}</span>
@@ -471,12 +374,6 @@ const Cart = () => {
                     <span>Subtotal ({items.length} {items.length === 1 ? 'item' : 'items'}):</span>
                     <span className="font-semibold">₹{cartTotals.subtotal.toFixed(2)}</span>
                   </div>
-                  {cartTotals.totalTax > 0 && (
-                    <div className="flex justify-between text-brown-700">
-                      <span>Tax:</span>
-                      <span className="font-semibold">₹{cartTotals.totalTax.toFixed(2)}</span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="border-t border-brown-200 pt-4 mb-4">

@@ -21,8 +21,6 @@ const ProductForm = () => {
     otherCategory: '',
     price: '',
     originalPrice: '',
-    purchaseAmount: '',
-    purchaseMode: 'Cash & Online & Bank Transfer',
     shortDescription: '',
     description: '',
     quantity: 0,
@@ -31,12 +29,6 @@ const ProductForm = () => {
     stockStatus: 'instock',
     minimumOrderableQuantity: 1,
     incrementor: '',
-    hsnCode: '',
-    gstOrTaxPercent: '',
-    taxType: '', // 'intrastate' or 'interstate' - auto-determined
-    igst: '',
-    cgst: '',
-    sgst: '',
     isReturnable: false,
     sequenceListing: 0,
     allProductsOrder: 0,
@@ -128,8 +120,6 @@ const ProductForm = () => {
           otherCategory: product.otherCategory || '',
           price: product.price || '',
           originalPrice: product.originalPrice || '',
-          purchaseAmount: product.purchaseAmount || '',
-          purchaseMode: product.purchaseMode || 'Cash & Online & Bank Transfer',
           shortDescription: product.shortDescription || '',
           description: product.description || '',
           quantity: product.quantity || 0,
@@ -138,11 +128,6 @@ const ProductForm = () => {
           stockStatus: product.stockStatus || 'instock',
           minimumOrderableQuantity: product.minimumOrderableQuantity || 1,
           incrementor: product.incrementor || '',
-          hsnCode: product.hsnCode || '',
-          gstOrTaxPercent: product.gstOrTaxPercent || '',
-          igst: product.igst || '',
-          cgst: product.cgst || '',
-          sgst: product.sgst || '',
           isReturnable: product.isReturnable !== undefined ? product.isReturnable : false,
           sequenceListing: product.sequenceListing || 0,
           allProductsOrder: product.allProductsOrder || 0,
@@ -235,29 +220,6 @@ const ProductForm = () => {
       return;
     }
     
-    // Auto-calculate CGST and SGST when GST rate changes (for intra-state)
-    if (name === 'gstOrTaxPercent') {
-      const gstRate = parseFloat(value) || 0;
-      setFormData(prev => {
-        const newData = { ...prev, [name]: value };
-        // Auto-calculate CGST and SGST when GST rate is entered
-        // For intra-state: CGST = SGST = GST/2
-        if (gstRate > 0) {
-          const halfRate = parseFloat((gstRate / 2).toFixed(2));
-          // Always auto-calculate CGST and SGST
-          // User can manually override if needed
-          newData.cgst = halfRate.toString();
-          newData.sgst = halfRate.toString();
-        } else {
-          // Clear CGST and SGST if GST rate is cleared
-          newData.cgst = '';
-          newData.sgst = '';
-        }
-        return newData;
-      });
-      return;
-    }
-    
     if (name.includes('.')) {
       const [parent, child, grandchild] = name.split('.');
       setFormData(prev => ({
@@ -339,16 +301,11 @@ const ProductForm = () => {
         searchTags: formData.searchTags.filter(tag => tag.trim() !== ''),
         price: parseFloat(formData.price),
         originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
-        purchaseAmount: formData.purchaseAmount ? parseFloat(formData.purchaseAmount) : undefined,
         quantity: parseInt(formData.quantity) || 0,
         availableStock: parseInt(formData.availableStock) || 0,
         stockStatus: formData.stockStatus || 'instock',
         minimumOrderableQuantity: parseInt(formData.minimumOrderableQuantity) || 1,
         incrementor: formData.incrementor ? parseFloat(formData.incrementor) : undefined,
-        gstOrTaxPercent: formData.gstOrTaxPercent ? parseFloat(formData.gstOrTaxPercent) : undefined,
-        igst: formData.igst ? parseFloat(formData.igst) : undefined,
-        cgst: formData.cgst ? parseFloat(formData.cgst) : undefined,
-        sgst: formData.sgst ? parseFloat(formData.sgst) : undefined,
         sequenceListing: parseInt(formData.sequenceListing) || 0,
         allProductsOrder: parseInt(formData.allProductsOrder) || 0,
         images: formData.images.filter(img => img.trim() !== ''),
@@ -362,7 +319,6 @@ const ProductForm = () => {
           })),
         subcategory: formData.subcategory && formData.subcategory.trim() !== '' ? formData.subcategory.trim() : undefined,
         otherCategory: formData.otherCategory && formData.otherCategory.trim() !== '' ? formData.otherCategory.trim() : undefined,
-        hsnCode: formData.hsnCode && formData.hsnCode.trim() !== '' ? formData.hsnCode.trim() : undefined,
       };
 
       // Merge custom specification fields into specifications
@@ -590,7 +546,7 @@ const ProductForm = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-medium text-gray-900 mb-0.5">
                     Price *
@@ -618,43 +574,6 @@ const ProductForm = () => {
                     onChange={handleChange}
                     className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-900 mb-0.5">
-                    Purchase Amount
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="purchaseAmount"
-                    value={formData.purchaseAmount}
-                    onChange={handleChange}
-                    placeholder="Purchase amount"
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-900 mb-0.5">
-                    Purchase Mode
-                  </label>
-                  <select
-                    name="purchaseMode"
-                    value={formData.purchaseMode}
-                    onChange={handleChange}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  >
-                    <option value="Cash">Cash</option>
-                    <option value="Online">Online</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cash & Online">Cash & Online</option>
-                    <option value="Cash & Bank Transfer">Cash & Bank Transfer</option>
-                    <option value="Online & Bank Transfer">Online & Bank Transfer</option>
-                    <option value="Cash & Online & Bank Transfer">Cash & Online & Bank Transfer</option>
-                  </select>
                 </div>
               </div>
 
@@ -819,99 +738,6 @@ const ProductForm = () => {
                   placeholder="Incrementor (Optional)"
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
-              </div>
-            </div>
-          </div>
-
-          {/* Tax & GST Information */}
-          <div>
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Tax & GST Information</h2>
-            <div className="space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-900 mb-0.5">
-                    HSN CODE
-                  </label>
-                  <input
-                    type="text"
-                    name="hsnCode"
-                    value={formData.hsnCode}
-                    onChange={handleChange}
-                    placeholder="HSN CODE"
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-900 mb-0.5">
-                    GST Rate (%) *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="gstOrTaxPercent"
-                    value={formData.gstOrTaxPercent}
-                    onChange={handleChange}
-                    placeholder="Enter GST Rate (e.g., 18 for 18%)"
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">
-                <p className="text-xs text-blue-800">
-                  <strong>Note:</strong> Enter GST Rate %. For Intra-state (same state), CGST and SGST will be auto-calculated (each = GST/2). For Inter-state, use IGST field.
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Common GST rates: 0%, 5%, 12%, 18%, 28%
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-900 mb-0.5">
-                    CGST (%) - Intra-state
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="cgst"
-                    value={formData.cgst}
-                    onChange={handleChange}
-                    placeholder="Auto-calculated"
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-0.5">Same state</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-900 mb-0.5">
-                    SGST (%) - Intra-state
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="sgst"
-                    value={formData.sgst}
-                    onChange={handleChange}
-                    placeholder="Auto-calculated"
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-0.5">Same state</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-900 mb-0.5">
-                    IGST (%) - Inter-state
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="igst"
-                    value={formData.igst}
-                    onChange={handleChange}
-                    placeholder="Enter IGST for inter-state sales"
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-0.5">Different state</p>
-                </div>
               </div>
             </div>
           </div>

@@ -16,7 +16,7 @@ const Home = () => {
             alt: "ShopCart Banner 2",
           },
         ]}
-        mobileSrc="https://res.cloudinary.com/dzd47mpdo/image/upload/v1773386363/Untitled_1920_x_600_px_heqmlh.svg"
+        mobileSrc="https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1920_x_600_px_1080_x_1080_px_fgv6mv.png"
       />
     </div>
   );

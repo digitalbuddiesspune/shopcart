@@ -214,11 +214,9 @@ const ProductDetail = () => {
     ?.filter((offer) => quantity >= offer.minQty)
     .sort((a, b) => b.minQty - a.minQty)[0];
 
-  // Calculate total price with tax
   const calculateTotalPrice = () => {
-    if (!product) return { basePrice: 0, tax: 0, total: 0, taxDetails: { type: '', rate: 0, breakdown: '', cgstAmount: 0, sgstAmount: 0, igstAmount: 0 } };
+    if (!product) return { basePrice: 0, total: 0 };
     
-    // Calculate base price (with bulk offer if available)
     let basePrice = 0;
     if (bulkOffer && quantity >= bulkOffer.minQty) {
       basePrice = bulkOffer.pricePerPiece * quantity;
@@ -226,94 +224,10 @@ const ProductDetail = () => {
       basePrice = product.price * quantity;
     }
     
-    // Calculate tax according to Indian GST system
-    let tax = 0;
-    let taxDetails = {
-      type: '',
-      rate: 0,
-      breakdown: '',
-      cgstAmount: 0,
-      sgstAmount: 0,
-      igstAmount: 0
-    };
-    
-    // Priority 1: If IGST is set (for inter-state sales)
-    if (product.igst && parseFloat(product.igst) > 0) {
-      const igstRate = parseFloat(product.igst);
-      tax = (basePrice * igstRate) / 100;
-      taxDetails = {
-        type: 'IGST',
-        rate: igstRate,
-        breakdown: `IGST ${igstRate}%`,
-        cgstAmount: 0,
-        sgstAmount: 0,
-        igstAmount: tax
-      };
-    }
-    // Priority 2: If CGST and SGST are set (for intra-state sales)
-    else if (product.cgst && product.sgst && (parseFloat(product.cgst) > 0 || parseFloat(product.sgst) > 0)) {
-      const cgstRate = parseFloat(product.cgst) || 0;
-      const sgstRate = parseFloat(product.sgst) || 0;
-      const cgstAmount = (basePrice * cgstRate) / 100;
-      const sgstAmount = (basePrice * sgstRate) / 100;
-      tax = cgstAmount + sgstAmount;
-      const totalGstRate = cgstRate + sgstRate;
-      taxDetails = {
-        type: 'CGST+SGST',
-        rate: totalGstRate,
-        breakdown: `CGST ${cgstRate}% + SGST ${sgstRate}%`,
-        cgstAmount: cgstAmount,
-        sgstAmount: sgstAmount,
-        igstAmount: 0
-      };
-    }
-    // Priority 3: If only CGST is set
-    else if (product.cgst && parseFloat(product.cgst) > 0) {
-      const cgstRate = parseFloat(product.cgst);
-      tax = (basePrice * cgstRate) / 100;
-      taxDetails = {
-        type: 'CGST',
-        rate: cgstRate,
-        breakdown: `CGST ${cgstRate}%`,
-        cgstAmount: tax,
-        sgstAmount: 0,
-        igstAmount: 0
-      };
-    }
-    // Priority 4: If only SGST is set
-    else if (product.sgst && parseFloat(product.sgst) > 0) {
-      const sgstRate = parseFloat(product.sgst);
-      tax = (basePrice * sgstRate) / 100;
-      taxDetails = {
-        type: 'SGST',
-        rate: sgstRate,
-        breakdown: `SGST ${sgstRate}%`,
-        cgstAmount: 0,
-        sgstAmount: tax,
-        igstAmount: 0
-      };
-    }
-    // Priority 5: If gstOrTaxPercent is set (general GST)
-    else if (product.gstOrTaxPercent && parseFloat(product.gstOrTaxPercent) > 0) {
-      const gstRate = parseFloat(product.gstOrTaxPercent);
-      tax = (basePrice * gstRate) / 100;
-      taxDetails = {
-        type: 'GST',
-        rate: gstRate,
-        breakdown: `GST ${gstRate}%`,
-        cgstAmount: 0,
-        sgstAmount: 0,
-        igstAmount: 0
-      };
-    }
-    
-    const total = basePrice + tax;
-    
-    return { basePrice, tax, total, taxDetails };
+    return { basePrice, total: basePrice };
   };
 
   const priceDetails = calculateTotalPrice();
-  const totalPrice = priceDetails.total;
 
   return (
     <div className="min-h-screen bg-brown-50">
@@ -725,42 +639,8 @@ const ProductDetail = () => {
                 <div className="bg-gradient-to-r from-brown-50 to-brown-50 rounded-lg p-3 border border-brown-100">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-brown-700">Subtotal (Excluding Tax):</span>
-                      <span className="text-base font-semibold text-brown-900">₹{priceDetails.basePrice.toFixed(2)}</span>
-                    </div>
-                    {priceDetails.tax > 0 && (
-                      <div className="space-y-1 pt-1 border-t border-brown-200">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-brown-700">
-                            Tax ({priceDetails.taxDetails.breakdown}):
-                          </span>
-                          <span className="text-sm font-semibold text-brown-700">₹{priceDetails.tax.toFixed(2)}</span>
-                        </div>
-                        {priceDetails.taxDetails.type === 'CGST+SGST' && (
-                          <div className="pl-4 space-y-0.5 text-xs text-brown-600">
-                            <div className="flex items-center justify-between">
-                              <span>CGST ({parseFloat(product.cgst || 0)}%):</span>
-                              <span>₹{priceDetails.taxDetails.cgstAmount.toFixed(2)}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>SGST ({parseFloat(product.sgst || 0)}%):</span>
-                              <span>₹{priceDetails.taxDetails.sgstAmount.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        )}
-                        {priceDetails.taxDetails.type === 'IGST' && (
-                          <div className="pl-4 text-xs text-brown-600">
-                            <div className="flex items-center justify-between">
-                              <span>IGST ({priceDetails.taxDetails.rate}%):</span>
-                              <span>₹{priceDetails.taxDetails.igstAmount.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between pt-2 border-t-2 border-brown-300">
-                      <span className="text-base font-bold text-brown-900">Total Price (Including Tax):</span>
-                      <span className="text-2xl font-bold text-brown-600">₹{totalPrice.toFixed(2)}</span>
+                      <span className="text-base font-bold text-brown-900">Total Price:</span>
+                      <span className="text-2xl font-bold text-brown-600">₹{priceDetails.total.toFixed(2)}</span>
                     </div>
                     {bulkOffer && quantity >= bulkOffer.minQty && (
                       <p className="text-xs text-green-700 mt-1 font-medium">
