@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { isAuthenticated, removeToken } from "../utils/auth";
+import { isAuthenticated, removeToken, getUserInfo } from "../utils/auth";
 import { cartAPI, categoryAPI } from "../utils/api";
 
 const Header = () => {
@@ -8,7 +8,10 @@ const Header = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [categories, setCategories] = useState([]);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
   const navigate = useNavigate();
+  const userInfo = getUserInfo();
 
   useEffect(() => {
     const authStatus = isAuthenticated();
@@ -48,9 +51,20 @@ const Header = () => {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSignOut = () => {
     removeToken();
     setAuthenticated(false);
+    setProfileOpen(false);
     navigate('/');
     window.location.reload();
   };
@@ -92,6 +106,27 @@ const Header = () => {
             {/* Cart and Wishlist Icons - Desktop Only */}
             {authenticated && (
               <div className="hidden md:flex items-center space-x-3">
+                {/* Orders Icon */}
+                <NavLink
+                  to="/orders"
+                  className="relative p-2 text-brown-700 hover:text-brown-600 transition-colors"
+                  aria-label="My Orders"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                    />
+                  </svg>
+                </NavLink>
+
                 {/* Wishlist Icon */}
                 <NavLink
                   to="/wishlist"
@@ -142,20 +177,72 @@ const Header = () => {
             )}
 
             {authenticated ? (
-              <>
+              <div className="relative" ref={profileRef}>
                 <button
-                  onClick={handleSignOut}
-                  className="hidden sm:inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-brown-800 text-white text-sm sm:text-base font-inter font-medium rounded-lg hover:bg-brown-900 transition-colors"
+                  onClick={() => setProfileOpen((prev) => !prev)}
+                  className="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-brown-800 text-white text-sm font-bold hover:bg-brown-900 transition-colors"
+                  aria-label="Profile menu"
                 >
-                  Sign Out
+                  {userInfo?.name?.charAt(0)?.toUpperCase() || 'U'}
                 </button>
                 <button
-                  onClick={handleSignOut}
-                  className="sm:hidden px-3 py-1.5 bg-brown-800 text-white text-xs font-inter font-medium rounded-lg hover:bg-brown-900 transition-colors"
+                  onClick={() => setProfileOpen((prev) => !prev)}
+                  className="md:hidden flex items-center justify-center w-8 h-8 rounded-full bg-brown-800 text-white text-xs font-bold hover:bg-brown-900 transition-colors"
+                  aria-label="Profile menu"
                 >
-                  Sign Out
+                  {userInfo?.name?.charAt(0)?.toUpperCase() || 'U'}
                 </button>
-              </>
+
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-brown-200 py-2 z-50">
+                    <div className="px-4 py-3 border-b border-brown-100">
+                      <p className="text-sm font-bold text-brown-900 truncate">{userInfo?.name || 'User'}</p>
+                      <p className="text-xs text-brown-500 truncate">{userInfo?.email || ''}</p>
+                    </div>
+                    <NavLink
+                      to="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-brown-700 hover:bg-brown-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      My Profile
+                    </NavLink>
+                    <NavLink
+                      to="/orders"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-brown-700 hover:bg-brown-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      My Orders
+                    </NavLink>
+                    <NavLink
+                      to="/wishlist"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-brown-700 hover:bg-brown-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      Wishlist
+                    </NavLink>
+                    <div className="border-t border-brown-100 mt-1 pt-1">
+                      <button
+                        onClick={handleSignOut}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <NavLink
@@ -269,6 +356,26 @@ const Header = () => {
               <div className="md:hidden border-t border-brown-200 pt-4 mb-4">
                 <div className="flex items-center space-x-4 px-2">
                   <NavLink
+                    to="/orders"
+                    className="flex items-center space-x-2 text-brown-700 hover:text-brown-600 transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">Orders</span>
+                  </NavLink>
+                  <NavLink
                     to="/wishlist"
                     className="flex items-center space-x-2 text-brown-700 hover:text-brown-600 transition-colors"
                     onClick={() => setMobileOpen(false)}
@@ -317,17 +424,29 @@ const Header = () => {
               </div>
             )}
 
-            {/* Sign In/Sign Out Button */}
+            {/* Profile & Sign Out - Mobile */}
             {authenticated ? (
-              <button
-                onClick={() => {
-                  handleSignOut();
-                  setMobileOpen(false);
-                }}
-                className="sm:hidden mt-2 px-4 py-2 bg-brown-800 text-white text-sm font-inter font-medium rounded-lg hover:bg-brown-900 transition-colors text-center w-full"
-              >
-                Sign Out
-              </button>
+              <div className="border-t border-brown-200 pt-4 space-y-2">
+                <NavLink
+                  to="/profile"
+                  className="flex items-center gap-3 px-2 py-2 text-brown-700 hover:bg-brown-50 rounded-lg transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span className="text-sm font-medium">My Profile</span>
+                </NavLink>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setMobileOpen(false);
+                  }}
+                  className="w-full mt-1 px-4 py-2 bg-brown-800 text-white text-sm font-inter font-medium rounded-lg hover:bg-brown-900 transition-colors text-center"
+                >
+                  Sign Out
+                </button>
+              </div>
             ) : (
               <NavLink
                 to="/signin"

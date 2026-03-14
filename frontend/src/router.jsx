@@ -16,6 +16,10 @@ import AllProducts from './pages/AllProducts'
 import ProductDetail from './pages/ProductDetail'
 import Wishlist from './pages/Wishlist'
 import Cart from './pages/Cart'
+import Checkout from './pages/Checkout'
+import OrderConfirmation from './pages/OrderConfirmation'
+import Orders from './pages/Orders'
+import Profile from './pages/Profile'
 import AdminLayout from './components/admin/AdminLayout'
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminProducts from './pages/admin/Products'
@@ -43,6 +47,10 @@ const router = createBrowserRouter(
             <Route path='signup' element={<SignUp/>} />
             <Route path='wishlist' element={<Wishlist/>} />
             <Route path='cart' element={<Cart/>} />
+            <Route path='checkout' element={<Checkout/>} />
+            <Route path='order-confirmation/:orderId' element={<OrderConfirmation/>} />
+            <Route path='orders' element={<Orders/>} />
+            <Route path='profile' element={<Profile/>} />
             <Route path='privacy-policy' element={<PrivacyPolicy/>} />
             <Route path='terms-of-service' element={<TermsOfService/>} />
             <Route path='refund-policy' element={<RefundPolicy/>} />

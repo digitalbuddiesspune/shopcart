@@ -180,9 +180,39 @@ export const wishlistAPI = {
   },
 };
 
+// Order API functions
+export const orderAPI = {
+  placeOrder: async (orderData) => {
+    const response = await api.post('/orders/place', orderData);
+    return response.data;
+  },
+
+  getMyOrders: async () => {
+    const response = await api.get('/orders/my-orders');
+    return response.data;
+  },
+
+  getOrderById: async (orderId) => {
+    const response = await api.get(`/orders/${orderId}`);
+    return response.data;
+  },
+};
+
+// Profile API functions
+export const profileAPI = {
+  getProfile: async () => {
+    const response = await api.get('/profile');
+    return response.data;
+  },
+
+  updateProfile: async (data) => {
+    const response = await api.put('/profile', data);
+    return response.data;
+  },
+};
+
 // User API functions (Admin only)
 export const userAPI = {
-  // Get all users
   getAllUsers: async () => {
     const response = await api.get('/admin/users');
     return response.data;

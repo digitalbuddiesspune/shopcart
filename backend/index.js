@@ -31,6 +31,10 @@ app.use("/api/v1/cart", cartRouter);
 import wishlistRouter from './routes/wishlistRoute.js';
 app.use("/api/v1/wishlist", wishlistRouter);
 
+// Order routes
+import orderRouter from './routes/orderRoute.js';
+app.use("/api/v1/orders", orderRouter);
+
 // User routes
 import userRouter from './routes/userRoute.js';
 app.use("/api/v1", userRouter);
