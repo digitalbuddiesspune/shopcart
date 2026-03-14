@@ -214,7 +214,7 @@ const AllProducts = () => {
                   >
                     <div className="aspect-square bg-gradient-to-br from-brown-50 to-brown-100 overflow-hidden relative flex-shrink-0">
                       {discount > 0 && (
-                        <div className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full shadow-lg">
+                        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full shadow-lg whitespace-nowrap">
                           {discount}% OFF
                         </div>
                       )}

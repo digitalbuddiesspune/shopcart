@@ -62,7 +62,7 @@ const Categories = () => {
   }, [loading, categories, animate]);
 
   return (
-    <section className="bg-brown-50 py-8 md:py-12 lg:py-16">
+    <section className="bg-brown-50 py-8 md:py-10 lg:py-12 pb-4 md:pb-5 lg:pb-6">
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex items-start justify-between gap-4 mb-6 md:mb-8">
           <div>

@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { productAPI, categoryAPI, cartAPI } from '../utils/api';
+import { productAPI, categoryAPI, cartAPI, wishlistAPI } from '../utils/api';
 import { isAuthenticated } from '../utils/auth';
 
 // Helper function to convert title to URL slug
@@ -23,6 +23,8 @@ const CategoryDetail = () => {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addingToCart, setAddingToCart] = useState({});
+  const [wishlistItems, setWishlistItems] = useState({});
+  const [togglingWishlist, setTogglingWishlist] = useState({});
   const isAllProductsPage = location.pathname === '/all-products';
 
   // Fetch all categories for sidebar
@@ -100,6 +102,55 @@ const CategoryDetail = () => {
 
     fetchProducts();
   }, [categorySlug, selectedSubcategory]);
+
+  useEffect(() => {
+    const fetchWishlistStatus = async () => {
+      if (!isAuthenticated() || products.length === 0) return;
+      try {
+        const response = await wishlistAPI.getWishlist();
+        if (response.success) {
+          const wishlistMap = {};
+          (response.data || []).forEach((item) => {
+            const id = item.product?._id || item.product;
+            if (id) wishlistMap[id] = true;
+          });
+          setWishlistItems(wishlistMap);
+        }
+      } catch (err) {
+        console.error('Failed to fetch wishlist:', err);
+      }
+    };
+    fetchWishlistStatus();
+  }, [products]);
+
+  const handleWishlistToggle = async (e, productId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated()) {
+      navigate('/sign-in');
+      return;
+    }
+    setTogglingWishlist((prev) => ({ ...prev, [productId]: true }));
+    try {
+      if (wishlistItems[productId]) {
+        const response = await wishlistAPI.removeFromWishlist(productId);
+        if (response.success) {
+          setWishlistItems((prev) => ({ ...prev, [productId]: false }));
+        }
+      } else {
+        const response = await wishlistAPI.addToWishlist(productId);
+        if (response.success) {
+          setWishlistItems((prev) => ({ ...prev, [productId]: true }));
+        }
+      }
+    } catch (err) {
+      if (err.response?.status === 401) {
+        navigate('/sign-in');
+      }
+    } finally {
+      setTogglingWishlist((prev) => ({ ...prev, [productId]: false }));
+    }
+  };
 
   // Show loading while fetching categories
   if (categoriesLoading) {
@@ -356,8 +407,33 @@ const CategoryDetail = () => {
                       className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-brown-200 overflow-hidden transform hover:-translate-y-1 flex flex-col h-full"
                     >
                       <div className="aspect-square bg-gradient-to-br from-brown-50 to-brown-100 overflow-hidden relative flex-shrink-0">
+                        {/* Wishlist Button */}
+                        <button
+                          onClick={(e) => handleWishlistToggle(e, product._id)}
+                          disabled={togglingWishlist[product._id]}
+                          className={`absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 bg-white rounded-full shadow-md flex items-center justify-center transition-colors border border-brown-200 disabled:opacity-50 ${
+                            wishlistItems[product._id] ? 'bg-brown-50' : 'hover:bg-brown-50'
+                          }`}
+                          aria-label={wishlistItems[product._id] ? "Remove from Wishlist" : "Add to Wishlist"}
+                        >
+                          <svg
+                            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[18px] md:h-[18px] ${
+                              wishlistItems[product._id] ? 'text-red-500 fill-red-500' : 'text-brown-600'
+                            }`}
+                            fill={wishlistItems[product._id] ? 'currentColor' : 'none'}
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                            />
+                          </svg>
+                        </button>
                         {discount > 0 && (
-                          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full shadow-lg">
+                          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full shadow-lg whitespace-nowrap">
                             {discount}% OFF
                           </div>
                         )}
