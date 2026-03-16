@@ -1,16 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { isAuthenticated, removeToken, getUserInfo } from "../utils/auth";
 import { cartAPI, categoryAPI } from "../utils/api";
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [categories, setCategories] = useState([]);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
   const userInfo = getUserInfo();
 
   useEffect(() => {
@@ -37,6 +40,10 @@ const Header = () => {
     };
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+  }, [searchParams]);
 
   const fetchCartCount = async () => {
     try {
@@ -69,12 +76,16 @@ const Header = () => {
     window.location.reload();
   };
 
-  const navItems = [
-    { to: "/", label: "Home" },
-    { to: "/all-products", label: "Categories" },
-    { to: "/about", label: "About" },
-    { to: "/contact", label: "Contact" },
-  ];
+  const submitSearch = (term) => {
+    const q = (term || '').trim();
+    setMobileOpen(false);
+    setMobileSearchOpen(false);
+    if (!q) {
+      navigate('/all-products');
+      return;
+    }
+    navigate(`/all-products?search=${encodeURIComponent(q)}`);
+  };
 
   const linkClass = ({ isActive }) =>
     `font-inter text-base sm:text-lg text-brown-700 hover:text-brown-900 transition-colors ${
@@ -92,13 +103,52 @@ const Header = () => {
             </h1>
           </NavLink>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} className={linkClass}>
-                {item.label}
-              </NavLink>
-            ))}
+          {/* Desktop Search */}
+          <div className="hidden md:flex items-center gap-4 lg:gap-6 flex-1 justify-center px-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitSearch(searchTerm);
+              }}
+              className="flex-1 max-w-md"
+              role="search"
+              aria-label="Product search"
+            >
+              <div className="relative">
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search products..."
+                  className="w-full pl-10 pr-24 py-2 rounded-lg border border-brown-200 bg-white text-brown-900 placeholder:text-brown-400 focus:outline-none focus:ring-2 focus:ring-brown-800 focus:border-brown-800"
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-brown-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+                  </svg>
+                </div>
+
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {searchTerm.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchTerm('');
+                        navigate('/all-products');
+                      }}
+                      className="px-2 py-1 text-xs rounded-md border border-brown-200 text-brown-700 hover:bg-brown-100"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 text-sm rounded-md bg-brown-800 text-white hover:bg-brown-900"
+                  >
+                    Search
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
 
           {/* Cart, Wishlist Icons + Sign In/Sign Up Button + Mobile Toggle */}
@@ -175,6 +225,25 @@ const Header = () => {
                 </NavLink>
               </div>
             )}
+
+            {/* Mobile Search Toggle */}
+            <button
+              type="button"
+              className="md:hidden relative h-9 w-9 sm:h-10 sm:w-10 inline-flex items-center justify-center rounded-lg border border-brown-200 text-brown-700 hover:bg-brown-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brown-800 focus:ring-offset-2"
+              aria-label={mobileSearchOpen ? 'Close search' : 'Open search'}
+              aria-expanded={mobileSearchOpen}
+              onClick={() => setMobileSearchOpen((v) => !v)}
+            >
+              {mobileSearchOpen ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+                </svg>
+              )}
+            </button>
 
             {authenticated ? (
               <div className="relative" ref={profileRef}>
@@ -259,6 +328,7 @@ const Header = () => {
                 </NavLink>
               </>
             )}
+
             <button
               type="button"
               className="md:hidden relative h-9 w-9 sm:h-10 sm:w-10 inline-flex flex-col items-center justify-center rounded-lg border border-brown-200 text-brown-700 hover:bg-brown-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brown-800 focus:ring-offset-2"
@@ -289,6 +359,56 @@ const Header = () => {
           </div>
         </div>
 
+        {/* Mobile Search (toggle) */}
+        {mobileSearchOpen && (
+          <div className="md:hidden mt-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitSearch(searchTerm);
+              }}
+              role="search"
+              aria-label="Product search"
+            >
+              <div className="relative">
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search products..."
+                  autoFocus
+                  className="w-full pl-10 pr-24 py-2 rounded-lg border border-brown-200 bg-white text-brown-900 placeholder:text-brown-400 focus:outline-none focus:ring-2 focus:ring-brown-800 focus:border-brown-800"
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-brown-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+                  </svg>
+                </div>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {searchTerm.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchTerm('');
+                        navigate('/all-products');
+                        setMobileSearchOpen(false);
+                      }}
+                      className="px-2 py-1 text-xs rounded-md border border-brown-200 text-brown-700 hover:bg-brown-100"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 text-sm rounded-md bg-brown-800 text-white hover:bg-brown-900"
+                  >
+                    Search
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
+
         {/* Mobile Menu */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
@@ -298,24 +418,6 @@ const Header = () => {
           }`}
         >
           <div className="pt-3 pb-2 border-t border-brown-200 flex flex-col">
-            {/* Navigation Items */}
-            <div className="space-y-2 mb-4">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `${linkClass({ isActive })} py-2 px-2 rounded-lg hover:bg-brown-50 ${
-                      isActive ? "bg-brown-50" : ""
-                    }`
-                  }
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-
             {/* Categories Section */}
             <div className="border-t border-brown-200 pt-4 mb-4">
               <h3 className="text-sm font-semibold text-brown-900 mb-3 px-2">

@@ -1,10 +1,12 @@
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { categoryAPI, productAPI, cartAPI } from '../utils/api';
 import { isAuthenticated } from '../utils/auth';
 
 const AllProducts = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,9 @@ const AllProducts = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        const search = (searchParams.get('search') || '').trim();
         const params = { limit: 100 };
+        if (search) params.search = search;
         const response = await productAPI.getAllProducts(params);
         if (response.success) {
           setProducts(response.data.products);
@@ -54,7 +58,9 @@ const AllProducts = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [searchParams]);
+
+  const searchValue = (searchParams.get('search') || '').trim();
 
   return (
     <div className="min-h-screen bg-brown-50">
@@ -167,11 +173,24 @@ const AllProducts = () => {
             {/* Header */}
             <div className="mb-6 md:mb-8">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brown-900 mb-2">
-                All Products
+                {searchValue ? `Search: "${searchValue}"` : 'All Products'}
               </h1>
               <p className="text-sm sm:text-base text-brown-600">
-                Browse all products from all categories
+                {searchValue ? 'Showing matching products' : 'Browse all products from all categories'}
               </p>
+              {searchValue && (
+                <div className="mt-3">
+                  <button
+                    onClick={() => setSearchParams({})}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-brown-200 text-brown-700 hover:bg-brown-100 transition-colors text-sm font-semibold"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Clear search
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Products from All Categories */}
@@ -198,6 +217,14 @@ const AllProducts = () => {
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <p className="text-brown-600">No products found</p>
+                  {searchValue && (
+                    <button
+                      onClick={() => setSearchParams({})}
+                      className="mt-4 px-4 py-2 bg-brown-800 text-white rounded-lg hover:bg-brown-900"
+                    >
+                      Clear search
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
