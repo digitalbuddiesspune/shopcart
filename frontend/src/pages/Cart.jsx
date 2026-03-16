@@ -12,7 +12,7 @@ const Cart = () => {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
     fetchCart();
@@ -29,7 +29,7 @@ const Cart = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        navigate('/sign-in');
+        navigate('/signin');
       } else {
         setError(err.message || 'Failed to fetch cart');
       }

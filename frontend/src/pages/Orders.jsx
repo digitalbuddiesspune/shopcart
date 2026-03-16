@@ -20,7 +20,7 @@ const Orders = () => {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
     fetchOrders();
@@ -35,7 +35,7 @@ const Orders = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        navigate('/sign-in');
+        navigate('/signin');
       } else {
         setError('Failed to fetch orders');
       }

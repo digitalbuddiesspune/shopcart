@@ -127,7 +127,7 @@ const CategoryDetail = () => {
     e.preventDefault();
     e.stopPropagation();
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
     setTogglingWishlist((prev) => ({ ...prev, [productId]: true }));
@@ -145,7 +145,7 @@ const CategoryDetail = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        navigate('/sign-in');
+        navigate('/signin');
       }
     } finally {
       setTogglingWishlist((prev) => ({ ...prev, [productId]: false }));
@@ -485,7 +485,7 @@ const CategoryDetail = () => {
                             onClick={async (e) => {
                               e.preventDefault();
                               if (!isAuthenticated()) {
-                                navigate('/sign-in');
+                                navigate('/signin');
                                 return;
                               }
                               
@@ -499,7 +499,7 @@ const CategoryDetail = () => {
                                 }
                               } catch (err) {
                                 if (err.response?.status === 401) {
-                                  navigate('/sign-in');
+                                  navigate('/signin');
                                 } else {
                                   alert(err.response?.data?.message || 'Failed to add product to cart. Please try again.');
                                 }

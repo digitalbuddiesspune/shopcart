@@ -64,7 +64,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
 
@@ -80,7 +80,7 @@ const ProductDetail = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        navigate('/sign-in');
+        navigate('/signin');
       } else {
         alert(err.response?.data?.message || 'Failed to add product to cart. Please try again.');
       }
@@ -91,7 +91,7 @@ const ProductDetail = () => {
 
   const handleWishlistToggle = async () => {
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
 
@@ -112,7 +112,7 @@ const ProductDetail = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        navigate('/sign-in');
+        navigate('/signin');
       } else {
         alert(err.response?.data?.message || 'Failed to update wishlist. Please try again.');
       }

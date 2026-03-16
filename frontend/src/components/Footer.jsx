@@ -102,7 +102,7 @@ const Footer = () => {
       ),
     },
     {
-      to: "/signin",
+      to: "/profile",
       label: "Account",
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

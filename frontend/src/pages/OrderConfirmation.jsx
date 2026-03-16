@@ -11,7 +11,7 @@ const OrderConfirmation = () => {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
     fetchOrder();

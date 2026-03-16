@@ -266,7 +266,7 @@ const AllProducts = () => {
                           onClick={async (e) => {
                             e.preventDefault();
                             if (!isAuthenticated()) {
-                              navigate('/sign-in');
+                              navigate('/signin');
                               return;
                             }
                             
@@ -280,7 +280,7 @@ const AllProducts = () => {
                               }
                             } catch (err) {
                               if (err.response?.status === 401) {
-                                navigate('/sign-in');
+                                navigate('/signin');
                               } else {
                                 alert(err.response?.data?.message || 'Failed to add product to cart. Please try again.');
                               }

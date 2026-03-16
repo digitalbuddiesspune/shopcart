@@ -26,7 +26,7 @@ const Checkout = () => {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
     fetchCart();
@@ -45,7 +45,7 @@ const Checkout = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        navigate('/sign-in');
+        navigate('/signin');
       } else {
         setError('Failed to load cart');
       }

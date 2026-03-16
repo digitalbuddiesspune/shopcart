@@ -13,7 +13,7 @@ const Wishlist = () => {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
     fetchWishlist();
@@ -30,7 +30,7 @@ const Wishlist = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        navigate('/sign-in');
+        navigate('/signin');
       } else {
         setError(err.message || 'Failed to fetch wishlist');
       }
