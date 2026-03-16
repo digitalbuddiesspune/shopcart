@@ -103,16 +103,16 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-brown-50">
       {/* Top Navigation */}
-      <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+      <nav className="bg-white shadow-sm border-b border-brown-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 aria-label="Toggle menu"
-                className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg text-brown-600 hover:text-brown-800 hover:bg-brown-100 transition-colors"
               >
                 {sidebarOpen ? (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +125,7 @@ const AdminLayout = () => {
                 )}
               </button>
               <div className="flex flex-col">
-                <Link to="/admin" className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+                <Link to="/admin" className="text-xl font-heading font-bold text-brown-800">
                   ShopCart Admin
                 </Link>
               </div>
@@ -133,7 +133,7 @@ const AdminLayout = () => {
             <div className="flex items-center gap-3">
               <Link
                 to="/"
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-brown-700 hover:text-brown-900 hover:bg-brown-100 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -143,7 +143,7 @@ const AdminLayout = () => {
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 text-sm font-medium shadow-md hover:shadow-lg transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-brown-800 text-white rounded-lg hover:bg-brown-900 text-sm font-medium shadow-md hover:shadow-lg transition-all"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -159,7 +159,7 @@ const AdminLayout = () => {
         {/* Overlay for mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -172,7 +172,7 @@ const AdminLayout = () => {
               : '-translate-x-full md:translate-x-0'
           } ${
             sidebarOpen ? 'w-64' : 'w-0 md:w-0'
-          } fixed md:static top-16 left-0 h-[calc(100vh-4rem)] md:h-auto bg-white border-r border-gray-200 shadow-lg transition-all duration-300 z-50 md:z-auto overflow-hidden`}
+          } fixed md:static top-16 left-0 h-[calc(100vh-4rem)] md:h-auto bg-white border-r border-brown-200 shadow-lg transition-all duration-300 z-50 md:z-auto overflow-hidden`}
         >
           <nav className="p-4 space-y-1">
             {menuItems.map((item) => {
@@ -190,11 +190,11 @@ const AdminLayout = () => {
                   }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 font-semibold shadow-sm border border-red-200'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-brown-100 text-brown-900 font-semibold shadow-sm border border-brown-300'
+                      : 'text-brown-700 hover:bg-brown-50 hover:text-brown-900'
                   }`}
                 >
-                  <span className={isActive ? 'text-red-600' : 'text-gray-500'}>{item.icon}</span>
+                  <span className={isActive ? 'text-brown-800' : 'text-brown-500'}>{item.icon}</span>
                   <span>{item.label}</span>
                 </Link>
               );

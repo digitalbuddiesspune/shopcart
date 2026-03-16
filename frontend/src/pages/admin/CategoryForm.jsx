@@ -129,32 +129,32 @@ const CategoryForm = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-          <p className="mt-4 text-gray-600">Loading category...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brown-700"></div>
+          <p className="mt-4 text-brown-700">Loading category...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-brown-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-brown-900">
             {isEdit ? 'Edit Category' : 'Add New Category'}
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-brown-700">
             {isEdit ? 'Update category information' : 'Create a new category'}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-brown-200 p-6 space-y-6">
           {/* Basic Information */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+            <h2 className="text-lg font-semibold text-brown-900 mb-4">Basic Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
+                <label className="block text-sm font-medium text-brown-900 mb-1">
                   Category Name *
                 </label>
                 <input
@@ -163,12 +163,12 @@ const CategoryForm = () => {
                   value={formData.name}
                   onChange={handleNameChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-brown-200 rounded-lg focus:ring-2 focus:ring-brown-700 focus:border-brown-700"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
+                <label className="block text-sm font-medium text-brown-900 mb-1">
                   Slug *
                 </label>
                 <input
@@ -177,14 +177,14 @@ const CategoryForm = () => {
                   value={formData.slug}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-brown-200 rounded-lg focus:ring-2 focus:ring-brown-700 focus:border-brown-700"
                   placeholder="category-slug"
                 />
-                <p className="mt-1 text-xs text-gray-500">URL-friendly identifier (auto-generated from name)</p>
+                <p className="mt-1 text-xs text-brown-600">URL-friendly identifier (auto-generated from name)</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
+                <label className="block text-sm font-medium text-brown-900 mb-1">
                   Category Image URL
                 </label>
                 <input
@@ -192,7 +192,7 @@ const CategoryForm = () => {
                   name="image"
                   value={formData.image}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-brown-200 rounded-lg focus:ring-2 focus:ring-brown-700 focus:border-brown-700"
                   placeholder="https://example.com/image.jpg"
                 />
                 {formData.image && (
@@ -211,7 +211,7 @@ const CategoryForm = () => {
 
               {/* Subcategories */}
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
+                <label className="block text-sm font-medium text-brown-900 mb-2">
                   Subcategories
                 </label>
                 <div className="space-y-2">
@@ -222,13 +222,13 @@ const CategoryForm = () => {
                         value={subcategory}
                         onChange={(e) => handleSubcategoryChange(index, e.target.value)}
                         placeholder="Enter subcategory name"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="flex-1 px-3 py-2 border border-brown-200 rounded-lg focus:ring-2 focus:ring-brown-700 focus:border-brown-700"
                       />
                       {formData.subcategories.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeSubcategory(index)}
-                          className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                         >
                           Remove
                         </button>
@@ -238,7 +238,7 @@ const CategoryForm = () => {
                   <button
                     type="button"
                     onClick={addSubcategory}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    className="px-4 py-2 bg-brown-100 text-brown-800 rounded-lg hover:bg-brown-200"
                   >
                     + Add Subcategory
                   </button>
@@ -247,7 +247,7 @@ const CategoryForm = () => {
 
               {/* Order */}
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
+                <label className="block text-sm font-medium text-brown-900 mb-1">
                   Display Order
                 </label>
                 <input
@@ -255,10 +255,10 @@ const CategoryForm = () => {
                   name="order"
                   value={formData.order}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-brown-200 rounded-lg focus:ring-2 focus:ring-brown-700 focus:border-brown-700"
                   placeholder="0"
                 />
-                <p className="mt-1 text-xs text-gray-500">Lower numbers appear first in sidebar (e.g., 1, 2, 3...)</p>
+                <p className="mt-1 text-xs text-brown-600">Lower numbers appear first in sidebar (e.g., 1, 2, 3...)</p>
               </div>
 
               {/* Status */}
@@ -268,9 +268,9 @@ const CategoryForm = () => {
                   name="isActive"
                   checked={formData.isActive}
                   onChange={handleChange}
-                  className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                  className="w-4 h-4 text-brown-700 border-brown-300 rounded focus:ring-brown-700"
                 />
-                <label className="text-sm font-medium text-gray-900">
+                <label className="text-sm font-medium text-brown-900">
                   Category is Active
                 </label>
               </div>
@@ -278,18 +278,18 @@ const CategoryForm = () => {
           </div>
 
           {/* Submit Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div className="flex gap-3 pt-4 border-t border-brown-100">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 font-medium disabled:opacity-50 shadow-md hover:shadow-lg transition-all"
+              className="flex-1 px-4 py-2 bg-brown-800 text-white rounded-lg hover:bg-brown-900 font-medium disabled:opacity-50 shadow-md hover:shadow-lg transition-all"
             >
               {loading ? 'Saving...' : (isEdit ? 'Update Category' : 'Create Category')}
             </button>
             <button
               type="button"
               onClick={() => navigate('/admin/categories')}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+              className="px-4 py-2 bg-brown-100 text-brown-800 rounded-lg hover:bg-brown-200 font-medium"
             >
               Cancel
             </button>

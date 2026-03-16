@@ -196,6 +196,18 @@ export const orderAPI = {
     const response = await api.get(`/orders/${orderId}`);
     return response.data;
   },
+
+  // Admin only
+  getAllOrdersAdmin: async () => {
+    const response = await api.get('/orders/admin/all');
+    return response.data;
+  },
+
+  // Admin only
+  updateOrderStatusAdmin: async (orderId, status) => {
+    const response = await api.put(`/orders/admin/${orderId}/status`, { status });
+    return response.data;
+  },
 };
 
 // Profile API functions

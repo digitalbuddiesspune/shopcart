@@ -28,6 +28,7 @@ import CategoryForm from './pages/admin/CategoryForm'
 import ProductForm from './pages/admin/ProductForm'
 import AdminSignIn from './pages/admin/AdminSignIn'
 import Users from './pages/admin/Users'
+import AdminOrders from './pages/admin/Orders'
 import ProtectedRoute from './components/ProtectedRoute'
 
 
@@ -70,6 +71,7 @@ const router = createBrowserRouter(
               <Route path='categories' element={<AdminCategories />} />
               <Route path='categories/new' element={<CategoryForm />} />
               <Route path='categories/:id/edit' element={<CategoryForm />} />
+              <Route path='orders' element={<AdminOrders />} />
               <Route path='users' element={<Users />} />
             </Route>
         </Route>
