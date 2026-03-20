@@ -10,6 +10,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [imagePopupOpen, setImagePopupOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [sizes, setSizes] = useState([]);
@@ -17,6 +18,22 @@ const ProductDetail = () => {
   const [addingToCart, setAddingToCart] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [updatingWishlist, setUpdatingWishlist] = useState(false);
+
+  useEffect(() => {
+    if (imagePopupOpen) {
+      document.body.style.overflow = 'hidden';
+      const onKeyDown = (e) => {
+        if (e.key === 'Escape') setImagePopupOpen(false);
+      };
+      window.addEventListener('keydown', onKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', onKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [imagePopupOpen]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -359,14 +376,23 @@ const ProductDetail = () => {
               {/* Main Image */}
               <div className="relative w-full aspect-square bg-gradient-to-br from-brown-50 to-brown-100 rounded-lg overflow-hidden shadow-inner border border-brown-200 transition-all hover:shadow-md flex-shrink-0 group">
                 {product.images && product.images.length > 0 ? (
-                  <img
-                    src={product.images[selectedImage]}
-                    alt={product.name}
-                    className="w-full h-full object-contain sm:object-cover transition-transform duration-300 hover:scale-105"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
+                  <div
+                    className="w-full h-full cursor-zoom-in flex items-center justify-center"
+                    onClick={() => setImagePopupOpen(true)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setImagePopupOpen(true)}
+                    aria-label="View image larger"
+                  >
+                    <img
+                      src={product.images[selectedImage]}
+                      alt={product.name}
+                      className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="absolute inset-0 w-full h-full flex items-center justify-center text-brown-400">
                     <svg
@@ -386,7 +412,7 @@ const ProductDetail = () => {
                 )}
                 
                 {/* Wishlist and Share Icons */}
-                <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-row gap-1.5 sm:gap-2 z-10">
+                <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-row gap-1.5 sm:gap-2 z-10" onClick={(e) => e.stopPropagation()}>
                   {/* Wishlist Button */}
                   <button
                     onClick={handleWishlistToggle}
@@ -831,6 +857,67 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Image Popup / Lightbox */}
+      {imagePopupOpen && product?.images?.length > 0 && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setImagePopupOpen(false)}
+        >
+          <button
+            onClick={() => setImagePopupOpen(false)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-brown-800 flex items-center justify-center transition-colors"
+            aria-label="Close"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          {product.images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-brown-800 flex items-center justify-center transition-colors"
+                aria-label="Previous image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-brown-800 flex items-center justify-center transition-colors"
+                aria-label="Next image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+          <div
+            className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={product.images[selectedImage]}
+              alt={product.name}
+              className="max-w-full max-h-[90vh] w-auto h-auto object-contain rounded-lg"
+            />
+          </div>
+          {product.images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/90 text-sm">
+              {selectedImage + 1} / {product.images.length}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
