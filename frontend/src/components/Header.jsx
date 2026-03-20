@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { isAuthenticated, removeToken, getUserInfo } from "../utils/auth";
-import { cartAPI, categoryAPI } from "../utils/api";
+import { cartAPI, categoryAPI, wishlistAPI } from "../utils/api";
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [wishlistItemCount, setWishlistItemCount] = useState(0);
   const [categories, setCategories] = useState([]);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -21,7 +22,16 @@ const Header = () => {
     setAuthenticated(authStatus);
     if (authStatus) {
       fetchCartCount();
+      fetchWishlistCount();
     }
+  }, []);
+
+  useEffect(() => {
+    const handleWishlistUpdated = () => {
+      fetchWishlistCount();
+    };
+    window.addEventListener('wishlist-updated', handleWishlistUpdated);
+    return () => window.removeEventListener('wishlist-updated', handleWishlistUpdated);
   }, []);
 
   useEffect(() => {
@@ -55,6 +65,18 @@ const Header = () => {
     } catch (err) {
       // Silently fail - user might not have cart yet
       console.error('Failed to fetch cart count:', err);
+    }
+  };
+
+  const fetchWishlistCount = async () => {
+    try {
+      const response = await wishlistAPI.getWishlist();
+      if (response.success && response.data) {
+        const count = response.data?.products?.length || 0;
+        setWishlistItemCount(count);
+      }
+    } catch (err) {
+      console.error('Failed to fetch wishlist count:', err);
     }
   };
 
@@ -196,6 +218,11 @@ const Header = () => {
                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                   </svg>
+                  {wishlistItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-brown-800 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
+                      {wishlistItemCount > 9 ? '9+' : wishlistItemCount}
+                    </span>
+                  )}
                 </NavLink>
 
                 {/* Cart Icon */}
@@ -479,7 +506,7 @@ const Header = () => {
                   </NavLink>
                   <NavLink
                     to="/wishlist"
-                    className="flex items-center space-x-2 text-brown-700 hover:text-brown-600 transition-colors"
+                    className="flex items-center space-x-2 text-brown-700 hover:text-brown-600 transition-colors relative"
                     onClick={() => setMobileOpen(false)}
                   >
                     <svg
@@ -496,6 +523,11 @@ const Header = () => {
                       />
                     </svg>
                     <span className="text-sm font-medium">Wishlist</span>
+                    {wishlistItemCount > 0 && (
+                      <span className="bg-brown-800 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
+                        {wishlistItemCount > 9 ? '9+' : wishlistItemCount}
+                      </span>
+                    )}
                   </NavLink>
                   <NavLink
                     to="/cart"

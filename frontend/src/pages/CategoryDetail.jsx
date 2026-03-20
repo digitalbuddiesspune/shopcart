@@ -108,10 +108,12 @@ const CategoryDetail = () => {
       if (!isAuthenticated() || products.length === 0) return;
       try {
         const response = await wishlistAPI.getWishlist();
-        if (response.success) {
+        if (response.success && response.data) {
           const wishlistMap = {};
-          (response.data || []).forEach((item) => {
-            const id = item.product?._id || item.product;
+          const productsList = response.data.products || response.data;
+          const arr = Array.isArray(productsList) ? productsList : [];
+          arr.forEach((item) => {
+            const id = item?._id || item?.product?._id || item?.product;
             if (id) wishlistMap[id] = true;
           });
           setWishlistItems(wishlistMap);
@@ -121,6 +123,27 @@ const CategoryDetail = () => {
       }
     };
     fetchWishlistStatus();
+  }, [products]);
+
+  useEffect(() => {
+    const handleWishlistUpdated = () => {
+      if (isAuthenticated() && products.length > 0) {
+        wishlistAPI.getWishlist().then((response) => {
+          if (response.success && response.data) {
+            const wishlistMap = {};
+            const productsList = response.data.products || response.data;
+            const arr = Array.isArray(productsList) ? productsList : [];
+            arr.forEach((item) => {
+              const id = item?._id || item?.product?._id || item?.product;
+              if (id) wishlistMap[id] = true;
+            });
+            setWishlistItems(wishlistMap);
+          }
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('wishlist-updated', handleWishlistUpdated);
+    return () => window.removeEventListener('wishlist-updated', handleWishlistUpdated);
   }, [products]);
 
   const handleWishlistToggle = async (e, productId) => {
@@ -136,11 +159,13 @@ const CategoryDetail = () => {
         const response = await wishlistAPI.removeFromWishlist(productId);
         if (response.success) {
           setWishlistItems((prev) => ({ ...prev, [productId]: false }));
+          window.dispatchEvent(new CustomEvent('wishlist-updated'));
         }
       } else {
         const response = await wishlistAPI.addToWishlist(productId);
         if (response.success) {
           setWishlistItems((prev) => ({ ...prev, [productId]: true }));
+          window.dispatchEvent(new CustomEvent('wishlist-updated'));
         }
       }
     } catch (err) {
@@ -407,11 +432,16 @@ const CategoryDetail = () => {
                       className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-brown-200 overflow-hidden transform hover:-translate-y-1 flex flex-col h-full"
                     >
                       <div className="aspect-square bg-gradient-to-br from-brown-50 to-brown-100 overflow-hidden relative flex-shrink-0">
+                        {discount > 0 && (
+                          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full shadow-lg whitespace-nowrap">
+                            {discount}% OFF
+                          </div>
+                        )}
                         {/* Wishlist Button */}
                         <button
                           onClick={(e) => handleWishlistToggle(e, product._id)}
                           disabled={togglingWishlist[product._id]}
-                          className={`absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 bg-white rounded-full shadow-md flex items-center justify-center transition-colors border border-brown-200 disabled:opacity-50 ${
+                          className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 bg-white rounded-full shadow-md flex items-center justify-center transition-colors border border-brown-200 disabled:opacity-50 ${
                             wishlistItems[product._id] ? 'bg-brown-50' : 'hover:bg-brown-50'
                           }`}
                           aria-label={wishlistItems[product._id] ? "Remove from Wishlist" : "Add to Wishlist"}
@@ -432,11 +462,6 @@ const CategoryDetail = () => {
                             />
                           </svg>
                         </button>
-                        {discount > 0 && (
-                          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full shadow-lg whitespace-nowrap">
-                            {discount}% OFF
-                          </div>
-                        )}
                         {product.images && product.images.length > 0 ? (
                           <img
                             src={product.images[0]}

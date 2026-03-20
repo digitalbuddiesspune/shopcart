@@ -45,6 +45,7 @@ const Wishlist = () => {
       const response = await wishlistAPI.removeFromWishlist(productId);
       if (response.success) {
         setWishlist(response.data);
+        window.dispatchEvent(new CustomEvent('wishlist-updated'));
       }
     } catch (err) {
       console.error('Failed to remove from wishlist:', err);
@@ -149,7 +150,7 @@ const Wishlist = () => {
                 >
                   <div className="aspect-square bg-gradient-to-br from-brown-50 to-brown-100 overflow-hidden relative flex-shrink-0">
                     {discount > 0 && (
-                      <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full shadow-lg whitespace-nowrap">
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 bg-brown-50 text-brown-600 border border-brown-200 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full shadow-lg whitespace-nowrap">
                         {discount}% OFF
                       </div>
                     )}
@@ -157,7 +158,7 @@ const Wishlist = () => {
                     <button
                       onClick={() => handleRemoveFromWishlist(product._id)}
                       disabled={removing[product._id]}
-                      className="absolute top-1 left-1 sm:top-2 sm:left-2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-brown-50 transition-colors border border-brown-200 disabled:opacity-50"
+                      className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-brown-50 transition-colors border border-brown-200 disabled:opacity-50"
                       aria-label="Remove from wishlist"
                     >
                       <svg

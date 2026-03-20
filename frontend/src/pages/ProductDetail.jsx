@@ -121,11 +121,13 @@ const ProductDetail = () => {
         const response = await wishlistAPI.removeFromWishlist(product._id);
         if (response.success) {
           setIsInWishlist(false);
+          window.dispatchEvent(new CustomEvent('wishlist-updated'));
         }
       } else {
         const response = await wishlistAPI.addToWishlist(product._id);
         if (response.success) {
           setIsInWishlist(true);
+          window.dispatchEvent(new CustomEvent('wishlist-updated'));
         }
       }
     } catch (err) {
