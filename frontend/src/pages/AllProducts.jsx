@@ -1,8 +1,9 @@
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { categoryAPI, productAPI, cartAPI, wishlistAPI } from '../utils/api';
 import { isAuthenticated } from '../utils/auth';
+import CategorySidebar from '../components/CategorySidebar';
 
 const AllProducts = () => {
   const navigate = useNavigate();
@@ -196,93 +197,12 @@ const AllProducts = () => {
       {/* Main Content with Sidebar */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
-          {/* Sidebar - All Categories */}
-          <aside className="w-full lg:w-64 xl:w-72 flex-shrink-0 order-2 lg:order-1">
-            <div className="bg-gradient-to-br from-brown-50 to-white lg:from-white rounded-lg sm:rounded-xl shadow-lg lg:shadow-sm border-2 lg:border border-brown-200 lg:border-brown-200 overflow-hidden lg:sticky lg:top-[120px] lg:max-h-[calc(100vh-120px)] lg:flex lg:flex-col">
-              {/* Sticky Header */}
-              <div className="sticky top-0 z-30 bg-gradient-to-r from-brown-800 to-brown-500 lg:from-white lg:to-white border-b-2 lg:border-b border-brown-300 lg:border-brown-200 px-3 sm:px-4 py-3 sm:py-4 flex-shrink-0">
-                <h3 className="text-base sm:text-lg font-bold text-white lg:text-brown-900 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 lg:hidden"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                  <span>All Categories</span>
-                </h3>
-              </div>
-              
-              {/* Scrollable Categories List */}
-              <div className="p-3 sm:p-4 overflow-y-auto flex-1 max-h-[400px] lg:max-h-none">
-                <nav className="space-y-1.5 sm:space-y-2">
-                  {/* All Products Link */}
-                  <Link
-                    to="/all-products"
-                    className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-colors mb-2 bg-brown-50 text-brown-600 font-semibold border border-brown-200"
-                  >
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 rounded-md overflow-hidden bg-gradient-to-br from-brown-500 to-brown-600 flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 sm:w-6 sm:h-6 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-xs sm:text-sm font-medium flex-1">
-                      All Products
-                    </span>
-                  </Link>
-                  
-                  {categoriesLoading ? (
-                    <div className="text-center py-4">
-                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-brown-800"></div>
-                    </div>
-                  ) : (
-                    categories.map((cat) => (
-                      <Link
-                        key={cat._id}
-                        to={`/category/${cat.slug}`}
-                        className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-colors text-brown-700 hover:bg-brown-50 hover:text-brown-900"
-                      >
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 rounded-md overflow-hidden bg-brown-100">
-                          {cat.image ? (
-                            <img
-                              src={cat.image}
-                              alt={cat.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-brown-200">
-                              <svg className="w-5 h-5 text-brown-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-xs sm:text-sm font-medium flex-1 line-clamp-2">
-                          {cat.name}
-                        </span>
-                      </Link>
-                    ))
-                  )}
-                </nav>
-              </div>
-            </div>
-          </aside>
+          <CategorySidebar
+            categories={categories}
+            loading={categoriesLoading}
+            activeSlug={null}
+            showOnMobile={true}
+          />
 
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 order-1 lg:order-2">
