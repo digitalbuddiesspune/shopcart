@@ -3,25 +3,27 @@ import { Link, useNavigate } from 'react-router-dom';
 import { cartAPI, orderAPI } from '../utils/api';
 import { isAuthenticated, getUserInfo } from '../utils/auth';
 
+const emptyAddress = (userInfo) => ({
+  fullName: userInfo?.name || '',
+  phone: '',
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
+  state: '',
+  pincode: '',
+});
+
 const Checkout = () => {
   const navigate = useNavigate();
+  const userInfo = getUserInfo();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState(null);
+  const [savedAddress, setSavedAddress] = useState(null);
+  const [showAddressForm, setShowAddressForm] = useState(true);
 
-  const userInfo = getUserInfo();
-
-  const [shippingAddress, setShippingAddress] = useState({
-    fullName: userInfo?.name || '',
-    phone: '',
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    state: '',
-    pincode: '',
-  });
-
+  const [shippingAddress, setShippingAddress] = useState(() => emptyAddress(userInfo));
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
@@ -31,6 +33,39 @@ const Checkout = () => {
     }
     fetchCart();
   }, [navigate]);
+
+  const fetchLastOrderAddress = async () => {
+    try {
+      const response = await orderAPI.getMyOrders();
+      if (response.success && response.data?.length > 0) {
+        const lastOrder = response.data[0];
+        const addr = lastOrder.shippingAddress;
+        if (addr?.fullName && addr?.addressLine1 && addr?.city && addr?.state && addr?.pincode && addr?.phone) {
+          setSavedAddress({
+            fullName: addr.fullName || '',
+            phone: addr.phone || '',
+            addressLine1: addr.addressLine1 || '',
+            addressLine2: addr.addressLine2 || '',
+            city: addr.city || '',
+            state: addr.state || '',
+            pincode: addr.pincode || '',
+          });
+          setShippingAddress({
+            fullName: addr.fullName || '',
+            phone: addr.phone || '',
+            addressLine1: addr.addressLine1 || '',
+            addressLine2: addr.addressLine2 || '',
+            city: addr.city || '',
+            state: addr.state || '',
+            pincode: addr.pincode || '',
+          });
+          setShowAddressForm(false);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch last order:', err);
+    }
+  };
 
   const fetchCart = async () => {
     try {
@@ -42,6 +77,7 @@ const Checkout = () => {
           return;
         }
         setCart(response.data);
+        fetchLastOrderAddress();
       }
     } catch (err) {
       if (err.response?.status === 401) {
@@ -89,6 +125,26 @@ const Checkout = () => {
     }
   };
 
+  const handleUseSavedAddress = () => {
+    if (savedAddress) {
+      setShippingAddress({ ...savedAddress });
+      setShowAddressForm(false);
+      setFormErrors({});
+    }
+  };
+
+  const handleChangeAddress = () => {
+    if (savedAddress) setShippingAddress({ ...savedAddress });
+    setShowAddressForm(true);
+    setFormErrors({});
+  };
+
+  const handleAddNewAddress = () => {
+    setShippingAddress(emptyAddress(userInfo));
+    setShowAddressForm(true);
+    setFormErrors({});
+  };
+
   const validateForm = () => {
     const errors = {};
     if (!shippingAddress.fullName.trim()) errors.fullName = 'Full name is required';
@@ -111,6 +167,9 @@ const Checkout = () => {
 
     setPlacing(true);
     try {
+      // 2.5 sec loading before placing order
+      await new Promise((r) => setTimeout(r, 2500));
+
       const response = await orderAPI.placeOrder({
         shippingAddress,
         paymentMethod: 'COD',
@@ -179,7 +238,52 @@ const Checkout = () => {
             {/* Shipping Address */}
             <div className="bg-white rounded-lg shadow-sm border border-brown-200 p-4 sm:p-5">
               <h2 className="text-lg font-bold text-brown-900 mb-3">Shipping Address</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              {savedAddress && !showAddressForm ? (
+                <div className="space-y-3">
+                  <div className="p-4 rounded-lg border-2 border-brown-200 bg-brown-50/50">
+                    <p className="font-semibold text-brown-900">{shippingAddress.fullName}</p>
+                    <p className="text-sm text-brown-600 mt-0.5">{shippingAddress.phone}</p>
+                    <p className="text-sm text-brown-700 mt-1">
+                      {shippingAddress.addressLine1}
+                      {shippingAddress.addressLine2 && `, ${shippingAddress.addressLine2}`}
+                    </p>
+                    <p className="text-sm text-brown-700">
+                      {shippingAddress.city}, {shippingAddress.state} - {shippingAddress.pincode}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={handleChangeAddress}
+                      className="px-4 py-2 text-sm font-semibold text-brown-800 bg-white border-2 border-brown-300 rounded-lg hover:bg-brown-50 transition-colors"
+                    >
+                      Change Address
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddNewAddress}
+                      className="px-4 py-2 text-sm font-semibold text-brown-700 border border-brown-300 rounded-lg hover:bg-brown-50 transition-colors"
+                    >
+                      Add New Address
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {savedAddress && (
+                    <button
+                      type="button"
+                      onClick={handleUseSavedAddress}
+                      className="text-sm font-semibold text-brown-600 hover:text-brown-800 flex items-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      Use saved address
+                    </button>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-brown-700 mb-1">Full Name *</label>
                   <input
@@ -272,6 +376,8 @@ const Checkout = () => {
                   {formErrors.pincode && <p className="text-red-500 text-xs mt-0.5">{formErrors.pincode}</p>}
                 </div>
               </div>
+                </div>
+              )}
             </div>
 
             {/* Payment Method - COD only */}
