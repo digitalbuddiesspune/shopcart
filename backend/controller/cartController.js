@@ -29,6 +29,36 @@ export const getCart = async (req, res) => {
       await User.findByIdAndUpdate(userId, { cart: cart._id });
     }
 
+    // Merge duplicate items (same product + same size) - fixes legacy duplicates
+    const itemMap = new Map();
+    for (const item of cart.items) {
+      const prodId = item.product._id ? item.product._id.toString() : item.product.toString();
+      const sizeVal = (item.size === '' || item.size === undefined) ? null : item.size;
+      const key = `${prodId}_${sizeVal}`;
+      if (itemMap.has(key)) {
+        itemMap.get(key).quantity += item.quantity;
+      } else {
+        itemMap.set(key, {
+          product: item.product._id || item.product,
+          quantity: item.quantity,
+          size: sizeVal
+        });
+      }
+    }
+    cart.items = Array.from(itemMap.values());
+    await cart.save();
+
+    // Re-populate after merge
+    await cart.populate({
+      path: 'items.product',
+      model: 'Product',
+      populate: {
+        path: 'category',
+        model: 'Category',
+        select: 'name slug'
+      }
+    });
+
     // Calculate total price
     let totalPrice = 0;
     if (cart.items && cart.items.length > 0) {
@@ -101,10 +131,14 @@ export const addToCart = async (req, res) => {
       await User.findByIdAndUpdate(userId, { cart: cart._id });
     }
 
+    // Normalize size: treat null, undefined, '' as same (no size)
+    const normalizedSize = (size === '' || size === undefined) ? null : size;
+
     // Check if product already exists in cart
-    const existingItemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId && item.size === size
-    );
+    const existingItemIndex = cart.items.findIndex((item) => {
+      const itemSize = (item.size === '' || item.size === undefined) ? null : item.size;
+      return item.product.toString() === productId && itemSize === normalizedSize;
+    });
 
     if (existingItemIndex > -1) {
       // Update quantity
@@ -114,7 +148,7 @@ export const addToCart = async (req, res) => {
       cart.items.push({
         product: productId,
         quantity: quantity,
-        size: size
+        size: normalizedSize
       });
     }
 
@@ -178,9 +212,12 @@ export const updateCartItem = async (req, res) => {
       });
     }
 
-    const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId && item.size === size
-    );
+    const normalizedSize = (size === '' || size === undefined) ? null : size;
+
+    const itemIndex = cart.items.findIndex((item) => {
+      const itemSize = (item.size === '' || item.size === undefined) ? null : item.size;
+      return item.product.toString() === productId && itemSize === normalizedSize;
+    });
 
     if (itemIndex === -1) {
       return res.status(404).json({
@@ -251,9 +288,12 @@ export const removeFromCart = async (req, res) => {
       });
     }
 
-    cart.items = cart.items.filter(
-      (item) => !(item.product.toString() === productId && item.size === size)
-    );
+    const normalizedSize = (size === '' || size === undefined) ? null : size;
+
+    cart.items = cart.items.filter((item) => {
+      const itemSize = (item.size === '' || item.size === undefined) ? null : item.size;
+      return !(item.product.toString() === productId && itemSize === normalizedSize);
+    });
 
     // Calculate total price
     let totalPrice = 0;

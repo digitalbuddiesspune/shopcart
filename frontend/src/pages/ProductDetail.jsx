@@ -15,6 +15,7 @@ const ProductDetail = () => {
   const [sizes, setSizes] = useState([]);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
   const [updatingWishlist, setUpdatingWishlist] = useState(false);
 
   useEffect(() => {
@@ -55,6 +56,41 @@ const ProductDetail = () => {
     }
   }, [slug]);
 
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!product || !isAuthenticated()) return;
+      try {
+        const response = await cartAPI.getCart();
+        if (response.success && response.data?.items) {
+          setCartItems(response.data.items);
+        }
+      } catch (err) {
+        console.error('Failed to fetch cart:', err);
+      }
+    };
+    fetchCart();
+  }, [product]);
+
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      if (product && isAuthenticated()) {
+        cartAPI.getCart().then((response) => {
+          if (response.success && response.data?.items) {
+            setCartItems(response.data.items);
+          }
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('cart-updated', handleCartUpdated);
+    return () => window.removeEventListener('cart-updated', handleCartUpdated);
+  }, [product]);
+
+  const normSize = (s) => (s === '' || s === undefined || s === null) ? null : s;
+  const isInCart = product && cartItems.some((item) => {
+    const pid = item.product?._id || item.product;
+    return pid?.toString() === product._id && normSize(item.size) === normSize(selectedSize);
+  });
+
   // Check if product is in wishlist
   useEffect(() => {
     const checkWishlist = async () => {
@@ -92,6 +128,8 @@ const ProductDetail = () => {
     try {
       const response = await cartAPI.addToCart(product._id, quantity, selectedSize);
       if (response.success) {
+        if (response.data?.items) setCartItems(response.data.items);
+        window.dispatchEvent(new CustomEvent('cart-updated'));
         alert('Product added to cart!');
       } else {
         alert('Failed to add product to cart. Please try again.');
@@ -733,16 +771,25 @@ const ProductDetail = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-row gap-2 sm:gap-3">
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={addingToCart}
-                    className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-brown-800 to-brown-900 text-white rounded-lg hover:from-brown-900 hover:to-brown-900 font-bold text-xs sm:text-sm md:text-base shadow-md hover:shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span>{addingToCart ? 'Adding...' : 'Add to Cart'}</span>
-                  </button>
+                  {isInCart ? (
+                    <div className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 bg-brown-100 text-brown-700 rounded-lg font-bold text-xs sm:text-sm md:text-base flex items-center justify-center gap-1.5 sm:gap-2">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Already in cart
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={addingToCart}
+                      className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-brown-800 to-brown-900 text-white rounded-lg hover:from-brown-900 hover:to-brown-900 font-bold text-xs sm:text-sm md:text-base shadow-md hover:shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span>{addingToCart ? 'Adding...' : 'Add to Cart'}</span>
+                    </button>
+                  )}
                   <button
                     onClick={handleBuyNow}
                     disabled={addingToCart}

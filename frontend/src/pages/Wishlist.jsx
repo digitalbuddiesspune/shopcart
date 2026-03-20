@@ -10,6 +10,7 @@ const Wishlist = () => {
   const [error, setError] = useState(null);
   const [removing, setRemoving] = useState({});
   const [addingToCart, setAddingToCart] = useState({});
+  const [cartProductIds, setCartProductIds] = useState(new Set());
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -18,6 +19,45 @@ const Wishlist = () => {
     }
     fetchWishlist();
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchCartProducts = async () => {
+      if (!isAuthenticated() || !wishlist?.products?.length) return;
+      try {
+        const response = await cartAPI.getCart();
+        if (response.success && response.data?.items) {
+          const ids = new Set();
+          response.data.items.forEach((item) => {
+            const pid = item.product?._id || item.product;
+            if (pid) ids.add(pid.toString());
+          });
+          setCartProductIds(ids);
+        }
+      } catch (err) {
+        console.error('Failed to fetch cart:', err);
+      }
+    };
+    fetchCartProducts();
+  }, [wishlist]);
+
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      if (isAuthenticated() && wishlist?.products?.length) {
+        cartAPI.getCart().then((response) => {
+          if (response.success && response.data?.items) {
+            const ids = new Set();
+            response.data.items.forEach((item) => {
+              const pid = item.product?._id || item.product;
+              if (pid) ids.add(pid.toString());
+            });
+            setCartProductIds(ids);
+          }
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('cart-updated', handleCartUpdated);
+    return () => window.removeEventListener('cart-updated', handleCartUpdated);
+  }, [wishlist]);
 
   const fetchWishlist = async () => {
     try {
@@ -60,6 +100,8 @@ const Wishlist = () => {
     try {
       const response = await cartAPI.addToCart(productId, 1);
       if (response.success) {
+        setCartProductIds((prev) => new Set(prev).add(productId));
+        window.dispatchEvent(new CustomEvent('cart-updated'));
         alert('Product added to cart!');
       }
     } catch (err) {
@@ -136,7 +178,7 @@ const Wishlist = () => {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
             {products.map((product) => {
               if (!product) return null;
               const discount = product.originalPrice && product.originalPrice > product.price
@@ -215,13 +257,22 @@ const Wishlist = () => {
                           </span>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleAddToCart(product._id)}
-                        disabled={addingToCart[product._id]}
-                        className="w-full px-3 py-2 bg-gradient-to-r from-brown-800 to-brown-900 text-white rounded-lg hover:from-brown-900 hover:to-brown-900 transition-all duration-200 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
-                      </button>
+                      {cartProductIds.has(product._id) ? (
+                        <div className="w-full px-3 py-2 bg-brown-100 text-brown-700 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5">
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Already in cart
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleAddToCart(product._id)}
+                          disabled={addingToCart[product._id]}
+                          className="w-full px-3 py-2 bg-gradient-to-r from-brown-800 to-brown-900 text-white rounded-lg hover:from-brown-900 hover:to-brown-900 transition-all duration-200 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

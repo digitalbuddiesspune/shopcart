@@ -13,6 +13,7 @@ const AllProducts = () => {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addingToCart, setAddingToCart] = useState({});
+  const [cartProductIds, setCartProductIds] = useState(new Set());
   const [wishlistItems, setWishlistItems] = useState({});
   const [togglingWishlist, setTogglingWishlist] = useState({});
 
@@ -82,6 +83,45 @@ const AllProducts = () => {
       }
     };
     fetchWishlistStatus();
+  }, [products]);
+
+  useEffect(() => {
+    const fetchCartProducts = async () => {
+      if (!isAuthenticated() || products.length === 0) return;
+      try {
+        const response = await cartAPI.getCart();
+        if (response.success && response.data?.items) {
+          const ids = new Set();
+          response.data.items.forEach((item) => {
+            const pid = item.product?._id || item.product;
+            if (pid) ids.add(pid.toString());
+          });
+          setCartProductIds(ids);
+        }
+      } catch (err) {
+        console.error('Failed to fetch cart:', err);
+      }
+    };
+    fetchCartProducts();
+  }, [products]);
+
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      if (isAuthenticated() && products.length > 0) {
+        cartAPI.getCart().then((response) => {
+          if (response.success && response.data?.items) {
+            const ids = new Set();
+            response.data.items.forEach((item) => {
+              const pid = item.product?._id || item.product;
+              if (pid) ids.add(pid.toString());
+            });
+            setCartProductIds(ids);
+          }
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('cart-updated', handleCartUpdated);
+    return () => window.removeEventListener('cart-updated', handleCartUpdated);
   }, [products]);
 
   useEffect(() => {
@@ -304,7 +344,7 @@ const AllProducts = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid gap-2 sm:gap-3 md:gap-4 lg:gap-4 xl:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
+              <div className="grid gap-2 sm:gap-3 md:gap-4 lg:gap-4 xl:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4">
                 {products.map((product) => {
                   const discount = product.originalPrice && product.originalPrice > product.price 
                     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -390,37 +430,47 @@ const AllProducts = () => {
                             </>
                           )}
                         </div>
-                        <button
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            if (!isAuthenticated()) {
-                              navigate('/signin');
-                              return;
-                            }
-                            
-                            setAddingToCart({ ...addingToCart, [product._id]: true });
-                            try {
-                              const response = await cartAPI.addToCart(product._id, 1);
-                              if (response.success) {
-                                alert('Product added to cart!');
-                              } else {
-                                alert('Failed to add product to cart. Please try again.');
-                              }
-                            } catch (err) {
-                              if (err.response?.status === 401) {
+                        {cartProductIds.has(product._id) ? (
+                          <div className="w-full px-3 py-2 bg-brown-100 text-brown-700 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5">
+                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Already in cart
+                          </div>
+                        ) : (
+                          <button
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              if (!isAuthenticated()) {
                                 navigate('/signin');
-                              } else {
-                                alert(err.response?.data?.message || 'Failed to add product to cart. Please try again.');
+                                return;
                               }
-                            } finally {
-                              setAddingToCart({ ...addingToCart, [product._id]: false });
-                            }
-                          }}
-                          disabled={addingToCart[product._id]}
-                          className="w-full px-3 py-2 bg-gradient-to-r from-brown-800 to-brown-900 text-white rounded-lg hover:from-brown-900 hover:to-brown-900 transition-all duration-200 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
-                        </button>
+                              setAddingToCart({ ...addingToCart, [product._id]: true });
+                              try {
+                                const response = await cartAPI.addToCart(product._id, 1);
+                                if (response.success) {
+                                  setCartProductIds((prev) => new Set(prev).add(product._id));
+                                  window.dispatchEvent(new CustomEvent('cart-updated'));
+                                  alert('Product added to cart!');
+                                } else {
+                                  alert('Failed to add product to cart. Please try again.');
+                                }
+                              } catch (err) {
+                                if (err.response?.status === 401) {
+                                  navigate('/signin');
+                                } else {
+                                  alert(err.response?.data?.message || 'Failed to add product to cart. Please try again.');
+                                }
+                              } finally {
+                                setAddingToCart({ ...addingToCart, [product._id]: false });
+                              }
+                            }}
+                            disabled={addingToCart[product._id]}
+                            className="w-full px-3 py-2 bg-gradient-to-r from-brown-800 to-brown-900 text-white rounded-lg hover:from-brown-900 hover:to-brown-900 transition-all duration-200 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </Link>

@@ -35,6 +35,14 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
+    const handleCartUpdated = () => {
+      fetchCartCount();
+    };
+    window.addEventListener('cart-updated', handleCartUpdated);
+    return () => window.removeEventListener('cart-updated', handleCartUpdated);
+  }, []);
+
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await categoryAPI.getAllCategories();
