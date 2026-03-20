@@ -423,8 +423,8 @@ const CategoryDetail = () => {
               )}
 
               {/* Products Section Header with Filters button on right */}
-              <div className="mb-4 sm:mb-6 md:mb-8 flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-brown-900">
+              <div className="mb-4 sm:mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-brown-900 min-w-0">
                   {selectedSubcategory
                     ? `Products in ${selectedSubcategory}` 
                     : `Products in ${category.name}`
@@ -435,8 +435,8 @@ const CategoryDetail = () => {
                     </span>
                   )}
                 </h2>
-                {/* Filters button - right side */}
-                <div className="relative" ref={filterPopoverRef}>
+                {/* Filters button - always right side */}
+                <div className="relative flex shrink-0 self-end sm:self-auto" ref={filterPopoverRef}>
                   <button
                     type="button"
                     onClick={() => setFilterOpen((v) => !v)}
@@ -456,9 +456,24 @@ const CategoryDetail = () => {
                       </span>
                     )}
                   </button>
-                  {/* Popover filter box */}
+                  {/* Popover filter box - fixed center on mobile, dropdown on desktop */}
                   {filterOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-xl border border-brown-200 shadow-xl z-50 p-4">
+                    <>
+                      <div className="fixed inset-0 bg-black/30 z-40 sm:hidden" onClick={() => setFilterOpen(false)} aria-hidden="true" />
+                      <div className="fixed left-4 right-4 top-1/2 -translate-y-1/2 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:translate-y-0 sm:w-80 max-h-[85vh] overflow-y-auto bg-white rounded-xl border border-brown-200 shadow-xl z-50 p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="font-semibold text-brown-900">Filters</span>
+                        <button
+                          type="button"
+                          onClick={() => setFilterOpen(false)}
+                          className="p-1.5 rounded-lg text-brown-500 hover:bg-brown-100 hover:text-brown-700 transition-colors"
+                          aria-label="Close filters"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                       <div className="space-y-4">
                         {/* Price Range */}
                         <div>
@@ -511,6 +526,7 @@ const CategoryDetail = () => {
                         </button>
                       </div>
                     </div>
+                    </>
                   )}
                 </div>
               </div>
