@@ -119,7 +119,14 @@ const Header = () => {
       <nav className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <NavLink to="/" className="flex items-center" onClick={() => setMobileOpen(false)}>
+          <NavLink
+            to="/"
+            className="flex items-center"
+            onClick={() => {
+              setMobileOpen(false);
+              window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            }}
+          >
             <h1 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-brown-800">
               ShopCart
             </h1>

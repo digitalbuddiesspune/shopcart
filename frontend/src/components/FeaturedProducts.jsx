@@ -9,7 +9,7 @@ const FeaturedProducts = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await productAPI.getAllProducts({ limit: 8 });
+        const response = await productAPI.getAllProducts({ limit: 100 });
         if (response.success) {
           setProducts(response.data?.products || response.data || []);
         }
@@ -62,7 +62,7 @@ const FeaturedProducts = () => {
         ) : products.length > 0 ? (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-              {products.slice(0, 8).map((product) => {
+              {products.slice(0, 100).map((product) => {
                 const discount = getDiscount(product);
                 return (
                   <Link

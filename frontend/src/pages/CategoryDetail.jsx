@@ -1,5 +1,5 @@
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { productAPI, categoryAPI, cartAPI, wishlistAPI } from '../utils/api';
 import { isAuthenticated } from '../utils/auth';
 
@@ -25,7 +25,46 @@ const CategoryDetail = () => {
   const [addingToCart, setAddingToCart] = useState({});
   const [wishlistItems, setWishlistItems] = useState({});
   const [togglingWishlist, setTogglingWishlist] = useState({});
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [sortBy, setSortBy] = useState('default');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterPopoverRef = useRef(null);
   const isAllProductsPage = location.pathname === '/all-products';
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (filterPopoverRef.current && !filterPopoverRef.current.contains(e.target)) {
+        setFilterOpen(false);
+      }
+    };
+    if (filterOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [filterOpen]);
+
+  // Filter and sort products
+  const filteredProducts = (() => {
+    let list = [...products];
+    const minP = priceRange.min ? Number(priceRange.min) : 0;
+    const maxP = priceRange.max ? Number(priceRange.max) : Infinity;
+    list = list.filter((p) => {
+      const price = p.price || 0;
+      if (price < minP || (maxP < Infinity && price > maxP)) return false;
+      return true;
+    });
+    if (sortBy === 'price-asc') list.sort((a, b) => (a.price || 0) - (b.price || 0));
+    else if (sortBy === 'price-desc') list.sort((a, b) => (b.price || 0) - (a.price || 0));
+    else if (sortBy === 'newest') list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    else if (sortBy === 'discount') list.sort((a, b) => {
+      const dA = a.originalPrice && a.originalPrice > a.price ? ((a.originalPrice - a.price) / a.originalPrice) * 100 : 0;
+      const dB = b.originalPrice && b.originalPrice > b.price ? ((b.originalPrice - b.price) / b.originalPrice) * 100 : 0;
+      return dB - dA;
+    });
+    return list;
+  })();
+
+  const hasActiveFilters = priceRange.min || priceRange.max || sortBy !== 'default';
 
   // Fetch all categories for sidebar
   useEffect(() => {
@@ -382,15 +421,98 @@ const CategoryDetail = () => {
                   </div>
                 </div>
               )}
-              
-              {/* Products Section */}
-              <div className="mb-4 sm:mb-6 md:mb-8">
+
+              {/* Products Section Header with Filters button on right */}
+              <div className="mb-4 sm:mb-6 md:mb-8 flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-brown-900">
                   {selectedSubcategory
                     ? `Products in ${selectedSubcategory}` 
                     : `Products in ${category.name}`
                   }
+                  {hasActiveFilters && (
+                    <span className="ml-2 text-base sm:text-lg font-normal text-brown-600">
+                      ({filteredProducts.length} results)
+                    </span>
+                  )}
                 </h2>
+                {/* Filters button - right side */}
+                <div className="relative" ref={filterPopoverRef}>
+                  <button
+                    type="button"
+                    onClick={() => setFilterOpen((v) => !v)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-semibold text-sm transition-colors ${
+                      filterOpen || hasActiveFilters
+                        ? 'bg-brown-800 text-white border-brown-800'
+                        : 'bg-white text-brown-700 border-brown-200 hover:bg-brown-50 hover:border-brown-300'
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Filters
+                    {hasActiveFilters && (
+                      <span className="bg-white/25 text-white text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                        {[priceRange.min, priceRange.max, sortBy !== 'default'].filter(Boolean).length}
+                      </span>
+                    )}
+                  </button>
+                  {/* Popover filter box */}
+                  {filterOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-xl border border-brown-200 shadow-xl z-50 p-4">
+                      <div className="space-y-4">
+                        {/* Price Range */}
+                        <div>
+                          <label className="block text-sm font-semibold text-brown-800 mb-2">Price Range (₹)</label>
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="number"
+                              placeholder="Min"
+                              min="0"
+                              value={priceRange.min}
+                              onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))}
+                              className="w-full px-3 py-2 border border-brown-200 rounded-lg text-sm focus:ring-2 focus:ring-brown-800 focus:border-brown-800"
+                            />
+                            <span className="text-brown-400">-</span>
+                            <input
+                              type="number"
+                              placeholder="Max"
+                              min="0"
+                              value={priceRange.max}
+                              onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))}
+                              className="w-full px-3 py-2 border border-brown-200 rounded-lg text-sm focus:ring-2 focus:ring-brown-800 focus:border-brown-800"
+                            />
+                          </div>
+                        </div>
+                        {/* Sort */}
+                        <div>
+                          <label className="block text-sm font-semibold text-brown-800 mb-2">Sort By</label>
+                          <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="w-full px-3 py-2 border border-brown-200 rounded-lg text-sm focus:ring-2 focus:ring-brown-800 focus:border-brown-800 bg-white"
+                          >
+                            <option value="default">Default</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="price-desc">Price: High to Low</option>
+                            <option value="discount">Best Discounts</option>
+                            <option value="newest">Newest First</option>
+                          </select>
+                        </div>
+                        {/* Clear Filters */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPriceRange({ min: '', max: '' });
+                            setSortBy('default');
+                          }}
+                          className="w-full px-4 py-2 text-sm font-semibold text-brown-700 bg-brown-100 hover:bg-brown-200 rounded-lg transition-colors"
+                        >
+                          Clear Filters
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Products Section */}
@@ -419,9 +541,24 @@ const CategoryDetail = () => {
                     <p className="text-brown-600">No products found in this category</p>
                   </div>
                 </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <p className="text-brown-600">No products match your filters</p>
+                    <button
+                      onClick={() => {
+                        setPriceRange({ min: '', max: '' });
+                        setSortBy('default');
+                      }}
+                      className="mt-3 px-4 py-2 bg-brown-800 text-white rounded-lg hover:bg-brown-900 text-sm font-semibold"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="grid gap-2 sm:gap-3 md:gap-4 lg:gap-4 xl:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
-                  {products.map((product) => {
+                  {filteredProducts.map((product) => {
                     const discount = product.originalPrice && product.originalPrice > product.price 
                       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
                       : 0;
