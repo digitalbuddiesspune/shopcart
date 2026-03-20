@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+};
+
 const CategorySidebar = ({ categories = [], loading = false, activeSlug = null, showOnMobile = true }) => {
   const isAllProductsActive = activeSlug === null;
 
@@ -22,6 +26,7 @@ const CategorySidebar = ({ categories = [], loading = false, activeSlug = null, 
             {/* All Products Link */}
             <Link
               to="/all-products"
+              onClick={scrollToTop}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                 isAllProductsActive
                   ? 'bg-brown-100/80 text-brown-900 font-semibold border-l-4 border-brown-600 shadow-sm'
@@ -52,6 +57,7 @@ const CategorySidebar = ({ categories = [], loading = false, activeSlug = null, 
                   <Link
                     key={cat._id}
                     to={`/category/${cat.slug}`}
+                    onClick={scrollToTop}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                       isActive
                         ? 'bg-brown-100/80 text-brown-900 font-semibold border-l-4 border-brown-600 shadow-sm'

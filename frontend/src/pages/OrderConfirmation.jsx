@@ -3,11 +3,23 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { orderAPI } from '../utils/api';
 import { isAuthenticated } from '../utils/auth';
 
+const statusColors = {
+  Pending: 'bg-yellow-100 text-yellow-700',
+  Confirmed: 'bg-blue-100 text-blue-700',
+  Processing: 'bg-indigo-100 text-indigo-700',
+  Shipped: 'bg-purple-100 text-purple-700',
+  Delivered: 'bg-green-100 text-green-700',
+  Cancelled: 'bg-red-100 text-red-700',
+};
+
+const cancellableStatuses = ['Pending', 'Confirmed'];
+
 const OrderConfirmation = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -29,6 +41,23 @@ const OrderConfirmation = () => {
       navigate('/orders');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    setCancelling(true);
+    try {
+      const response = await orderAPI.cancelOrder(orderId);
+      if (response.success) {
+        setOrder((prev) => (prev ? { ...prev, status: 'Cancelled' } : null));
+      } else {
+        alert(response.message || 'Failed to cancel order');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to cancel order');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -59,17 +88,33 @@ const OrderConfirmation = () => {
   return (
     <div className="min-h-screen bg-brown-50">
       <div className="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Success Icon */}
+        {/* Header - Success or Cancelled */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-            <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-brown-900 mb-2">Order Placed Successfully!</h1>
+          {order.status === 'Cancelled' ? (
+            <>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-brown-900 mb-2">Order Cancelled</h1>
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-brown-900 mb-2">Order Placed Successfully!</h1>
+            </>
+          )}
           <p className="text-brown-600">
-            Thank you for your order. Your order number is{' '}
-            <span className="font-bold text-brown-800">{order.orderNumber}</span>
+            {order.status === 'Cancelled' ? (
+              <>Order <span className="font-bold text-brown-800">{order.orderNumber}</span> has been cancelled.</>
+            ) : (
+              <>Thank you for your order. Your order number is <span className="font-bold text-brown-800">{order.orderNumber}</span></>
+            )}
           </p>
         </div>
 
@@ -77,9 +122,24 @@ const OrderConfirmation = () => {
         <div className="bg-white rounded-lg shadow-md border border-brown-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
             <h2 className="text-lg font-bold text-brown-900">Order Details</h2>
-            <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-full">
-              {order.status}
-            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                  statusColors[order.status] || 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                {order.status}
+              </span>
+              {cancellableStatuses.includes(order.status) && (
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={cancelling}
+                  className="px-4 py-1.5 text-sm font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                >
+                  {cancelling ? 'Cancelling...' : 'Cancel Order'}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 text-sm">

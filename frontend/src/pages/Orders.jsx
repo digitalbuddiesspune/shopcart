@@ -12,11 +12,14 @@ const statusColors = {
   Cancelled: 'bg-red-100 text-red-700',
 };
 
+const cancellableStatuses = ['Pending', 'Confirmed'];
+
 const Orders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -41,6 +44,25 @@ const Orders = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    setCancellingId(orderId);
+    try {
+      const response = await orderAPI.cancelOrder(orderId);
+      if (response.success) {
+        setOrders((prev) =>
+          prev.map((o) => (o._id === orderId ? { ...o, status: 'Cancelled' } : o))
+        );
+      } else {
+        alert(response.message || 'Failed to cancel order');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to cancel order');
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -166,19 +188,30 @@ const Orders = () => {
                     ))}
                   </div>
 
-                  {/* Shipping Address Summary */}
+                  {/* Shipping Address Summary & Actions */}
                   <div className="mt-4 pt-4 border-t border-brown-100 flex flex-col sm:flex-row justify-between gap-3">
                     <div className="text-xs text-brown-500">
                       <span className="font-semibold text-brown-700">Deliver to: </span>
                       {order.shippingAddress.fullName}, {order.shippingAddress.city},{' '}
                       {order.shippingAddress.state} - {order.shippingAddress.pincode}
                     </div>
-                    <Link
-                      to={`/order-confirmation/${order._id}`}
-                      className="text-sm font-semibold text-brown-600 hover:text-brown-800 transition-colors flex-shrink-0"
-                    >
-                      View Details →
-                    </Link>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {cancellableStatuses.includes(order.status) && (
+                        <button
+                          onClick={() => handleCancelOrder(order._id)}
+                          disabled={cancellingId === order._id}
+                          className="px-3 py-1.5 text-sm font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                        >
+                          {cancellingId === order._id ? 'Cancelling...' : 'Cancel Order'}
+                        </button>
+                      )}
+                      <Link
+                        to={`/order-confirmation/${order._id}`}
+                        className="text-sm font-semibold text-brown-600 hover:text-brown-800 transition-colors"
+                      >
+                        View Details →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>

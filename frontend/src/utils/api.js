@@ -197,6 +197,11 @@ export const orderAPI = {
     return response.data;
   },
 
+  cancelOrder: async (orderId) => {
+    const response = await api.put(`/orders/${orderId}/cancel`);
+    return response.data;
+  },
+
   // Admin only
   getAllOrdersAdmin: async () => {
     const response = await api.get('/orders/admin/all');
