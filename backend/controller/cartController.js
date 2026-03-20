@@ -61,7 +61,7 @@ export const getCart = async (req, res) => {
 export const addToCart = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { productId, quantity = 1 } = req.body;
+    const { productId, quantity = 1, size = null } = req.body;
 
     if (!productId) {
       return res.status(400).json({
@@ -103,7 +103,7 @@ export const addToCart = async (req, res) => {
 
     // Check if product already exists in cart
     const existingItemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId && item.size === size
     );
 
     if (existingItemIndex > -1) {
@@ -114,6 +114,7 @@ export const addToCart = async (req, res) => {
       cart.items.push({
         product: productId,
         quantity: quantity,
+        size: size
       });
     }
 
@@ -159,7 +160,7 @@ export const addToCart = async (req, res) => {
 export const updateCartItem = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { productId, quantity } = req.body;
+    const { productId, quantity, size = null } = req.body;
 
     if (!productId || !quantity || quantity < 1) {
       return res.status(400).json({
@@ -178,7 +179,7 @@ export const updateCartItem = async (req, res) => {
     }
 
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId && item.size === size
     );
 
     if (itemIndex === -1) {
@@ -232,7 +233,7 @@ export const updateCartItem = async (req, res) => {
 export const removeFromCart = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { productId } = req.body;
+    const { productId, size = null } = req.body;
 
     if (!productId) {
       return res.status(400).json({
@@ -251,7 +252,7 @@ export const removeFromCart = async (req, res) => {
     }
 
     cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productId
+      (item) => !(item.product.toString() === productId && item.size === size)
     );
 
     // Calculate total price

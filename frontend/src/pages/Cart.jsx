@@ -38,12 +38,13 @@ const Cart = () => {
     }
   };
 
-  const handleUpdateQuantity = async (productId, newQuantity) => {
+  const handleUpdateQuantity = async (productId, newQuantity, size = null) => {
     if (newQuantity < 1) return;
     
-    setUpdating({ ...updating, [productId]: true });
+    const itemKey = `${productId}-${size}`;
+    setUpdating({ ...updating, [itemKey]: true });
     try {
-      const response = await cartAPI.updateCartItem(productId, newQuantity);
+      const response = await cartAPI.updateCartItem(productId, newQuantity, size);
       if (response.success) {
         setCart(response.data);
       }
@@ -51,18 +52,19 @@ const Cart = () => {
       console.error('Failed to update quantity:', err);
       alert('Failed to update quantity. Please try again.');
     } finally {
-      setUpdating({ ...updating, [productId]: false });
+      setUpdating({ ...updating, [itemKey]: false });
     }
   };
 
-  const handleRemoveItem = async (productId) => {
+  const handleRemoveItem = async (productId, size = null) => {
     if (!window.confirm('Are you sure you want to remove this item from cart?')) {
       return;
     }
     
-    setUpdating({ ...updating, [productId]: true });
+    const itemKey = `${productId}-${size}`;
+    setUpdating({ ...updating, [itemKey]: true });
     try {
-      const response = await cartAPI.removeFromCart(productId);
+      const response = await cartAPI.removeFromCart(productId, size);
       if (response.success) {
         setCart(response.data);
       }
@@ -70,7 +72,7 @@ const Cart = () => {
       console.error('Failed to remove item:', err);
       alert('Failed to remove item. Please try again.');
     } finally {
-      setUpdating({ ...updating, [productId]: false });
+      setUpdating({ ...updating, [itemKey]: false });
     }
   };
 
@@ -205,7 +207,7 @@ const Cart = () => {
 
                 return (
                   <div
-                    key={item.product._id}
+                    key={`${item.product._id}-${item.size}`}
                     className="bg-white rounded-lg shadow-md border border-brown-200 p-4 sm:p-6"
                   >
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -252,44 +254,37 @@ const Cart = () => {
                             {product.category && (
                               <Link
                                 to={`/category/${product.category.slug}`}
-                                className="text-sm text-brown-500 hover:text-brown-600"
+                                className="text-sm text-brown-500 hover:text-brown-600 block"
                               >
                                 {product.category.name}
                               </Link>
                             )}
+                            {item.size && (
+                              <div className="mt-1">
+                                <span className="text-xs font-semibold text-brown-700 bg-brown-100 px-2 py-0.5 rounded">
+                                  Size: {item.size}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <button
-                            onClick={() => handleRemoveItem(product._id)}
-                            disabled={updating[product._id]}
+                            onClick={() => handleRemoveItem(product._id, item.size)}
+                            disabled={updating[`${product._id}-${item.size}`]}
                             className="flex-shrink-0 ml-2 text-brown-400 hover:text-brown-600 transition-colors"
                             aria-label="Remove item"
                           >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
                         </div>
 
                         {/* Price */}
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <span className="text-xl font-bold text-brown-900">
-                            ₹{product.price}
-                          </span>
+                          <span className="text-xl font-bold text-brown-900">₹{product.price}</span>
                           {product.originalPrice && product.originalPrice > product.price && (
                             <>
-                              <span className="text-sm text-brown-400 line-through">
-                                ₹{product.originalPrice}
-                              </span>
+                              <span className="text-sm text-brown-400 line-through">₹{product.originalPrice}</span>
                               {discount > 0 && (
                                 <span className="px-2 py-0.5 text-xs font-bold text-white bg-brown-800 rounded-full">
                                   {discount}% OFF
@@ -313,8 +308,8 @@ const Cart = () => {
                           <span className="text-sm font-semibold text-brown-700">Quantity:</span>
                           <div className="flex items-center gap-0 border-2 border-brown-300 rounded-lg overflow-hidden">
                             <button
-                              onClick={() => handleUpdateQuantity(product._id, item.quantity - 1)}
-                              disabled={updating[product._id] || item.quantity <= 1}
+                              onClick={() => handleUpdateQuantity(product._id, item.quantity - 1, item.size)}
+                              disabled={updating[`${product._id}-${item.size}`] || item.quantity <= 1}
                               className="px-3 py-1.5 text-brown-700 hover:bg-brown-100 disabled:opacity-50 disabled:cursor-not-allowed font-bold transition-colors"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,8 +320,8 @@ const Cart = () => {
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() => handleUpdateQuantity(product._id, item.quantity + 1)}
-                              disabled={updating[product._id]}
+                              onClick={() => handleUpdateQuantity(product._id, item.quantity + 1, item.size)}
+                              disabled={updating[`${product._id}-${item.size}`]}
                               className="px-3 py-1.5 text-brown-700 hover:bg-brown-100 disabled:opacity-50 disabled:cursor-not-allowed font-bold transition-colors"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

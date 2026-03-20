@@ -11,6 +11,8 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [sizes, setSizes] = useState([]);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const [updatingWishlist, setUpdatingWishlist] = useState(false);
@@ -25,6 +27,16 @@ const ProductDetail = () => {
           console.log('Specifications:', response.data.specifications);
           setProduct(response.data);
           setSelectedImage(0);
+          
+          // Parse sizes from specifications
+          if (response.data.specifications?.size) {
+            const sizeStr = response.data.specifications.size;
+            const parsedSizes = sizeStr.split(',').map(s => s.trim()).filter(s => s !== '');
+            setSizes(parsedSizes);
+          } else {
+            setSizes([]);
+          }
+
           // Set initial quantity based on minimumOrderableQuantity
           const minQty = response.data.minimumOrderableQuantity || 1;
           setQuantity(minQty);
@@ -70,9 +82,15 @@ const ProductDetail = () => {
 
     if (!product) return;
 
+    // Check if size is required and selected
+    if (sizes.length > 0 && !selectedSize) {
+      alert('Please select a size first');
+      return;
+    }
+
     setAddingToCart(true);
     try {
-      const response = await cartAPI.addToCart(product._id, quantity);
+      const response = await cartAPI.addToCart(product._id, quantity, selectedSize);
       if (response.success) {
         alert('Product added to cart!');
       } else {
@@ -173,6 +191,39 @@ const ProductDetail = () => {
           console.error('Failed to copy link:', clipboardErr);
         }
       }
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!isAuthenticated()) {
+      navigate('/signin');
+      return;
+    }
+
+    if (!product) return;
+
+    // Check if size is required and selected
+    if (sizes.length > 0 && !selectedSize) {
+      alert('Please select a size first');
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      const response = await cartAPI.addToCart(product._id, quantity, selectedSize);
+      if (response.success) {
+        navigate('/cart');
+      } else {
+        alert('Failed to process request. Please try again.');
+      }
+    } catch (err) {
+      if (err.response?.status === 401) {
+        navigate('/signin');
+      } else {
+        alert(err.response?.data?.message || 'Failed to process request. Please try again.');
+      }
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -597,6 +648,35 @@ const ProductDetail = () => {
                   </div>
                 )}
 
+                {/* Size Selection */}
+                {sizes.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-brown-700">Select Size:</span>
+                      {selectedSize && (
+                        <span className="text-xs font-medium text-brown-500 bg-brown-100 px-2 py-0.5 rounded">
+                          Selected: {selectedSize}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {sizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`min-w-[3rem] h-10 px-3 rounded-md border-2 font-bold text-sm transition-all ${
+                            selectedSize === size
+                              ? 'border-brown-800 bg-brown-800 text-white shadow-md'
+                              : 'border-brown-200 bg-white text-brown-700 hover:border-brown-400'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Quantity Selector */}
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold text-brown-700">Quantity:</span>
@@ -625,7 +705,6 @@ const ProductDetail = () => {
                       </svg>
                     </button>
                   </div>
-                  <span className="text-xs text-brown-600 font-medium">Pieces</span>
                 </div>
 
                 {/* Incrementor Info */}
@@ -662,7 +741,11 @@ const ProductDetail = () => {
                     </svg>
                     <span>{addingToCart ? 'Adding...' : 'Add to Cart'}</span>
                   </button>
-                  <button className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-2 border-brown-800 text-brown-600 rounded-lg hover:bg-brown-800 hover:text-white font-bold text-xs sm:text-sm md:text-base transition-all flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md">
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={addingToCart}
+                    className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-2 border-brown-800 text-brown-600 rounded-lg hover:bg-brown-800 hover:text-white font-bold text-xs sm:text-sm md:text-base transition-all flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md disabled:opacity-50"
+                  >
                     <svg
                       className="w-4 h-4 sm:w-5 sm:h-5"
                       fill="none"

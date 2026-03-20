@@ -83,7 +83,7 @@ const CategoryDetail = () => {
       
       try {
         setLoading(true);
-        const params = {};
+        const params = { limit: 500 };
         if (selectedSubcategory) {
           params.subcategory = selectedSubcategory;
         }

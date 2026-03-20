@@ -42,7 +42,7 @@ const AllProducts = () => {
       try {
         setLoading(true);
         const search = (searchParams.get('search') || '').trim();
-        const params = { limit: 100 };
+        const params = { limit: 500 };
         if (search) params.search = search;
         const response = await productAPI.getAllProducts(params);
         if (response.success) {

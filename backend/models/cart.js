@@ -12,8 +12,11 @@ const cartItemSchema = new mongoose.Schema(
       default: 1,
       min: 1,
     },
-  },
-  { _id: false }
+    size: {
+      type: String,
+      default: null,
+    },
+  }
 );
 
 const cartSchema = new mongoose.Schema(

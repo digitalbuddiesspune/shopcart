@@ -129,20 +129,20 @@ export const cartAPI = {
   },
   
   // Add item to cart
-  addToCart: async (productId, quantity = 1) => {
-    const response = await api.post('/cart/add', { productId, quantity });
+  addToCart: async (productId, quantity = 1, size = null) => {
+    const response = await api.post('/cart/add', { productId, quantity, size });
     return response.data;
   },
   
   // Update cart item quantity
-  updateCartItem: async (productId, quantity) => {
-    const response = await api.put('/cart/update', { productId, quantity });
+  updateCartItem: async (productId, quantity, size = null) => {
+    const response = await api.put('/cart/update', { productId, quantity, size });
     return response.data;
   },
   
   // Remove item from cart
-  removeFromCart: async (productId) => {
-    const response = await api.delete('/cart/remove', { data: { productId } });
+  removeFromCart: async (productId, size = null) => {
+    const response = await api.delete('/cart/remove', { data: { productId, size } });
     return response.data;
   },
   

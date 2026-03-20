@@ -299,7 +299,7 @@ const Checkout = () => {
                   if (!item.product) return null;
                   const priceDetails = calculateItemPrice(item.product, item.quantity);
                   return (
-                    <div key={item.product._id} className="flex gap-2.5 pb-2.5 border-b border-brown-100 last:border-0">
+                    <div key={`${item.product._id}-${item.size}`} className="flex gap-2.5 pb-2.5 border-b border-brown-100 last:border-0">
                       <div className="w-12 h-12 flex-shrink-0 bg-brown-100 rounded-md overflow-hidden">
                         {item.product.images?.[0] ? (
                           <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
@@ -309,8 +309,10 @@ const Checkout = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-brown-900 truncate">{item.product.name}</p>
-                        <div className="flex justify-between items-center">
-                          <p className="text-xs text-brown-500">Qty: {item.quantity}</p>
+                         <div className="flex justify-between items-center">
+                          <p className="text-xs text-brown-500">
+                            Qty: {item.quantity}{item.size ? ` | Size: ${item.size}` : ''}
+                          </p>
                           <p className="text-sm font-bold text-brown-800">₹{priceDetails.total.toFixed(2)}</p>
                         </div>
                       </div>

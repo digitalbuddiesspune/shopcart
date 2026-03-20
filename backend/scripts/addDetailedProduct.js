@@ -1,4 +1,4 @@
-// Script to add detailed product with all fields (like the 25ml container)
+ // Script to add detailed product with all fields (like the 25ml container)
 // Run this: node backend/scripts/addDetailedProduct.js
 
 import dotenv from 'dotenv';
