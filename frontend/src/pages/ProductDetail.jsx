@@ -18,6 +18,7 @@ const ProductDetail = () => {
   const [addingToCart, setAddingToCart] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [updatingWishlist, setUpdatingWishlist] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
     if (imagePopupOpen) {
@@ -72,6 +73,28 @@ const ProductDetail = () => {
       fetchProduct();
     }
   }, [slug]);
+
+  useEffect(() => {
+    const fetchRelated = async () => {
+      if (!product?.category) return;
+      const categoryId = product.category._id || product.category;
+      try {
+        const response = await productAPI.getAllProducts({
+          category: categoryId,
+          subcategory: product.subcategory || undefined,
+          limit: 9,
+        });
+        if (response.success) {
+          const list = response.data?.products || [];
+          const filtered = list.filter((p) => p._id !== product._id).slice(0, 8);
+          setRelatedProducts(filtered);
+        }
+      } catch (err) {
+        console.error('Failed to fetch related products:', err);
+      }
+    };
+    fetchRelated();
+  }, [product]);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -839,24 +862,71 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Note Section */}
-              <div className="pt-4 border-t border-brown-200">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="text-sm font-bold text-brown-900 mb-2 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Important Note
-                  </h4>
-                  <p className="text-xs text-brown-700 leading-relaxed">
-                    <span className="font-bold">Return or Replacement:</span> This item is eligible for free replacement/return within 3 days of delivery in an unlikely event of the delivered item being damaged/defective or different from what you had ordered. We may contact you to ascertain the damage or defect in the product prior to issuing refund/replacement. Product Size, Weight & Colour may vary.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <section className="max-w-7xl 2xl:max-w-[1840px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 md:py-12 border-t border-brown-200">
+          <h2 className="text-xl sm:text-2xl font-bold text-brown-900 mb-4 md:mb-6">
+            Related Products
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+            {relatedProducts.map((p) => {
+              const discount = p.originalPrice && p.originalPrice > p.price
+                ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)
+                : 0;
+              return (
+                <Link
+                  key={p._id}
+                  to={`/product/${p.slug}`}
+                  className="group bg-white border border-brown-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="relative aspect-square overflow-hidden bg-brown-100">
+                    {p.images?.[0] ? (
+                      <img
+                        src={p.images[0]}
+                        alt={p.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-brown-400">
+                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                    {discount > 0 && (
+                      <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[10px] font-bold text-white bg-brown-800 rounded-full">
+                        {discount}% OFF
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3 sm:p-4">
+                    <h3 className="text-sm font-semibold text-brown-900 group-hover:text-brown-600 transition-colors line-clamp-2 leading-tight mb-1.5">
+                      {p.name}
+                    </h3>
+                    {p.category && (
+                      <p className="text-xs text-brown-500 mb-2 truncate">
+                        {p.category.name || p.category}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-base font-bold text-brown-900">₹{p.price}</span>
+                      {p.originalPrice && p.originalPrice > p.price && (
+                        <span className="text-xs text-brown-400 line-through">₹{p.originalPrice}</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Image Popup / Lightbox */}
       {imagePopupOpen && product?.images?.length > 0 && (
