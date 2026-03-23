@@ -12,13 +12,14 @@ const Home = () => {
             alt: "FashionCart Banner 1",
           },
           {
-            desktop: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1920_x_600_px_7_ud5lkc.png",
+            desktop: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773386362/Untitled_1920_x_600_px_1_wbk8gh.svg",
             alt: "FashionCart Banner 2",
           },
           {
-            desktop: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773386362/Untitled_1920_x_600_px_1_wbk8gh.svg",
+            desktop: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1920_x_600_px_7_ud5lkc.png",
             alt: "FashionCart Banner 3",
           },
+          
         ]}
         mobileSlides={[
           {
