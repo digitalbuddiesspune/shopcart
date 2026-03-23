@@ -100,7 +100,7 @@ const SignUp = () => {
               Create Account
             </h2>
             <p className="text-brown-600 text-sm sm:text-base">
-              Join ShopCart and start your journey
+              Join FashionCart and start your journey
             </p>
           </div>
 

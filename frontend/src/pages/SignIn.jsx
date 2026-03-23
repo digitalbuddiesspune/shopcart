@@ -65,7 +65,7 @@ const SignIn = () => {
               Welcome Back
             </h2>
             <p className="text-brown-600 text-sm sm:text-base">
-              Sign in to continue to ShopCart
+              Sign in to continue to FashionCart
             </p>
           </div>
 

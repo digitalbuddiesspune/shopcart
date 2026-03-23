@@ -226,7 +226,7 @@ const ProductDetail = () => {
     const url = window.location.href;
     const shareData = {
       title: product.name,
-      text: `Check out ${product.name} on ShopCart!`,
+      text: `Check out ${product.name} on FashionCart!`,
       url: url,
     };
 

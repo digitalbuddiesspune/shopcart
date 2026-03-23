@@ -135,9 +135,11 @@ const Header = () => {
               window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
             }}
           >
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-brown-800">
-              ShopCart
-            </h1>
+            <img
+              src="https://res.cloudinary.com/dzd47mpdo/image/upload/v1774246114/Fashion_logo_lhy0ir.png"
+              alt="FashionCart"
+              className="h-8 sm:h-9 md:h-10 w-auto object-contain"
+            />
           </NavLink>
 
           {/* Desktop Search */}

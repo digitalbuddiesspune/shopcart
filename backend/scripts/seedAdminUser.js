@@ -2,7 +2,7 @@
  * Seed Admin User Script
  * Run: node backend/scripts/seedAdminUser.js
  * Creates super_admin if not exists.
- * Login: admin@shopcart.com / Admin@123
+ * Login: admin@fashioncart.com / Admin@123
  */
 
 import dotenv from 'dotenv';
@@ -16,7 +16,7 @@ import connectDB from '../config/databaseConnection.js';
 import User from '../models/user.js';
 import bcrypt from 'bcryptjs';
 
-const ADMIN_EMAIL = 'admin@shopcart.com';
+const ADMIN_EMAIL = 'admin@fashioncart.com';
 const ADMIN_PASSWORD = 'Admin@123';
 
 const seedAdminUser = async () => {

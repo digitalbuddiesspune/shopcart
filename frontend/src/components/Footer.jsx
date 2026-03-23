@@ -148,10 +148,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Company Info */}
           <div className="lg:col-span-1">
-            <NavLink to="/" className="inline-block mb-4" onClick={scrollToTop}>
-              <h2 className="text-2xl font-heading font-bold text-white">
-                ShopCart
-              </h2>
+            <NavLink to="/" className="inline-block mb-1" onClick={scrollToTop}>
+              <img
+                src="https://res.cloudinary.com/dzd47mpdo/image/upload/v1774246283/cart_vv3qwl.png"
+                alt="FashionCart"
+                className="h-8 sm:h-9 md:h-12 w-auto object-contain"
+              />
             </NavLink>
             <p className="text-sm text-brown-300 mb-6 leading-relaxed">
               Your one-stop online shopping destination. Discover quality products, great deals, fast delivery, and exceptional service — all in one place.
@@ -237,10 +239,10 @@ const Footer = () => {
                   />
                 </svg>
                 <a
-                  href="mailto:support@shopcart.com"
+                  href="mailto:support@fashioncart.com"
                   className="hover:text-white transition-colors duration-200"
                 >
-                  support@shopcart.com
+                  support@fashioncart.com
                 </a>
               </li>
               <li className="flex items-start">
@@ -297,7 +299,7 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-brown-700">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-brown-300 text-center md:text-left">
-              © {new Date().getFullYear()} ShopCart. All rights reserved.
+              © {new Date().getFullYear()} FashionCart. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm text-brown-400">
               <span className="hover:text-white transition-colors duration-200 cursor-pointer">

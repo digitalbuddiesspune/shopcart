@@ -126,7 +126,7 @@ const AdminLayout = () => {
               </button>
               <div className="flex flex-col">
                 <Link to="/admin" className="text-xl font-heading font-bold text-brown-800">
-                  ShopCart Admin
+                  FashionCart Admin
                 </Link>
               </div>
             </div>
