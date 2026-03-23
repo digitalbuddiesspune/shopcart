@@ -144,7 +144,7 @@ const Footer = () => {
 
       {/* Add bottom padding on mobile to prevent content from being hidden behind the bottom nav */}
       <footer className="bg-brown-800 text-brown-200 pb-16 md:pb-0">
-      <div className="max-w-7xl 2xl:max-w-[1450px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Company Info */}
           <div className="lg:col-span-1">
