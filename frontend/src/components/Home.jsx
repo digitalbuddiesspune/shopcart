@@ -12,11 +12,28 @@ const Home = () => {
             alt: "FashionCart Banner 1",
           },
           {
-            desktop: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773386362/Untitled_1920_x_600_px_1_wbk8gh.svg",
+            desktop: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1920_x_600_px_7_ud5lkc.png",
             alt: "FashionCart Banner 2",
           },
+          {
+            desktop: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773386362/Untitled_1920_x_600_px_1_wbk8gh.svg",
+            alt: "FashionCart Banner 3",
+          },
         ]}
-        mobileSrc="https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1920_x_600_px_1080_x_1080_px_fgv6mv.png"
+        mobileSlides={[
+          {
+            src: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1920_x_600_px_1080_x_1080_px_fgv6mv.png",
+            alt: "FashionCart Mobile Banner 1",
+          },
+          {
+            src: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1080_x_1080_px_17_quhnxr.png",
+            alt: "FashionCart Mobile Banner 2",
+          },
+          {
+            src: "https://res.cloudinary.com/dzd47mpdo/image/upload/v1773472369/Untitled_1920_x_600_px_1080_x_1080_px_2_bwkxkm.png",
+            alt: "FashionCart Mobile Banner 3",
+          },
+        ]}
       />
     </div>
   );

@@ -1,9 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const HeroSlider = ({ slides = [], mobileSrc }) => {
+const HeroSlider = ({ slides = [], mobileSrc, mobileSlides = [] }) => {
   const [index, setIndex] = useState(0);
   const timerRef = useRef(null);
-  const len = slides.length;
+  const touchStartXRef = useRef(0);
+  const touchEndXRef = useRef(0);
+  const SWIPE_THRESHOLD = 40;
+  const desktopLen = slides.length;
+  const normalizedMobileSlides = mobileSlides.length
+    ? mobileSlides
+    : mobileSrc
+      ? [{ src: mobileSrc, alt: 'Banner 1' }]
+      : [];
+  const mobileLen = normalizedMobileSlides.length;
+  const len = Math.max(desktopLen, mobileLen);
 
   const stop = () => {
     if (timerRef.current) {
@@ -27,6 +37,23 @@ const HeroSlider = ({ slides = [], mobileSrc }) => {
 
   const prev = () => setIndex((i) => (i - 1 + len) % len);
   const next = () => setIndex((i) => (i + 1) % len);
+  const handleTouchStart = (e) => {
+    const x = e.touches[0]?.clientX ?? 0;
+    touchStartXRef.current = x;
+    touchEndXRef.current = x;
+    stop();
+  };
+  const handleTouchMove = (e) => {
+    touchEndXRef.current = e.touches[0]?.clientX ?? touchEndXRef.current;
+  };
+  const handleTouchEnd = () => {
+    const diff = touchStartXRef.current - touchEndXRef.current;
+    if (Math.abs(diff) >= SWIPE_THRESHOLD) {
+      if (diff > 0) next();
+      else prev();
+    }
+    start();
+  };
 
   if (!len) return null;
 
@@ -86,9 +113,36 @@ const HeroSlider = ({ slides = [], mobileSrc }) => {
         </div>
       </div>
 
-      {/* Mobile single image */}
-      <div className="md:hidden block">
-        <img src={mobileSrc || slides[0]?.desktop} alt="Banner" className="w-full h-auto object-cover block" loading="lazy" />
+      {/* Mobile slider */}
+      <div
+        className="md:hidden block"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {mobileLen > 0 ? (
+          <img
+            src={normalizedMobileSlides[index % mobileLen]?.src}
+            alt={normalizedMobileSlides[index % mobileLen]?.alt || `Banner ${(index % mobileLen) + 1}`}
+            className="w-full h-auto object-cover block"
+            loading="lazy"
+          />
+        ) : (
+          <img src={slides[0]?.desktop} alt="Banner" className="w-full h-auto object-cover block" loading="lazy" />
+        )}
+        {mobileLen > 1 && (
+          <div className="py-2 flex items-center justify-center gap-2">
+            {normalizedMobileSlides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIndex(i)}
+                className={`${i === index % mobileLen ? 'w-6 bg-black/70' : 'w-3 bg-black/30'} h-1.5 rounded-full transition-all`}
+                aria-label={`Go to mobile slide ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
