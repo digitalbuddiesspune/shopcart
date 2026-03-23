@@ -31,7 +31,7 @@ const FeaturedProducts = () => {
 
   return (
     <section className="bg-brown-50 pt-4 md:pt-5 lg:pt-6 pb-8 md:pb-10 lg:pb-12">
-      <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 max-w-7xl 2xl:max-w-[1450px] mx-auto">
         <div className="flex items-end justify-between gap-4 mb-6 md:mb-8">
           <div>
             <p className="text-sm uppercase tracking-wide text-brown-600 font-semibold mb-2">
