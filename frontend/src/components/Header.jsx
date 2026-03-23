@@ -124,7 +124,7 @@ const Header = () => {
 
   return (
     <header className="bg-brown-50 shadow-md sticky top-0 z-50 border-b border-brown-200">
-      <nav className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+      <nav className="container max-w-7xl 2xl:max-w-[1840px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <NavLink
