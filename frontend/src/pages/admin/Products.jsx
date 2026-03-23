@@ -1,22 +1,48 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { productAPI } from '../../utils/api';
+import { categoryAPI, productAPI } from '../../utils/api';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [selectedCategory, selectedSubcategory]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryAPI.getAllCategories();
+      if (response.success) {
+        setCategories(response.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError(null);
-      // Fetch all products (including inactive) for admin
-      const response = await productAPI.getAllProducts({ limit: 1000, all: 'true' });
+      const queryParams = { limit: 1000, all: 'true' };
+      if (selectedCategory) {
+        queryParams.category = selectedCategory;
+      }
+      if (selectedSubcategory) {
+        queryParams.subcategory = selectedSubcategory;
+      }
+
+      // Fetch all products (including inactive) for admin, with optional filters
+      const response = await productAPI.getAllProducts(queryParams);
       console.log('Products API Response:', response);
       if (response.success) {
         const productsList = response.data?.products || [];
@@ -60,6 +86,13 @@ const Products = () => {
     }
   };
 
+  const selectedCategoryData = categories.find((cat) => cat._id === selectedCategory);
+  const availableSubcategories = selectedCategoryData?.subcategories || [];
+  const clearFilters = () => {
+    setSelectedCategory('');
+    setSelectedSubcategory('');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -100,6 +133,60 @@ const Products = () => {
               </svg>
               Add New Product
             </Link>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-brown-200 p-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-brown-800 uppercase tracking-wider mb-2">
+                Category
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setSelectedSubcategory('');
+                }}
+                className="w-full px-3 py-2 border border-brown-200 rounded-lg bg-white text-brown-900 focus:ring-2 focus:ring-brown-700 focus:border-brown-700"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-brown-800 uppercase tracking-wider mb-2">
+                Subcategory
+              </label>
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                disabled={!selectedCategory}
+                className="w-full px-3 py-2 border border-brown-200 rounded-lg bg-white text-brown-900 focus:ring-2 focus:ring-brown-700 focus:border-brown-700 disabled:bg-brown-50 disabled:text-brown-400"
+              >
+                <option value="">All Subcategories</option>
+                {availableSubcategories.map((subcategory, idx) => (
+                  <option key={`${subcategory}-${idx}`} value={subcategory}>
+                    {subcategory}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-end">
+              <button
+                onClick={clearFilters}
+                disabled={!selectedCategory && !selectedSubcategory}
+                className="w-full md:w-auto px-4 py-2 bg-brown-100 text-brown-800 border border-brown-200 rounded-lg hover:bg-brown-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Clear Filters
+              </button>
+            </div>
           </div>
         </div>
 
